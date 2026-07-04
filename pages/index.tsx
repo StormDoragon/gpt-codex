@@ -25,7 +25,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section style={{ padding: "56px 0" }}>
+        <section id="model" style={{ padding: "56px 0" }}>
           <div style={ui.wrap}>
             <h2 style={{ fontSize: "clamp(2rem,4vw,3.4rem)", margin: "0 0 24px" }}>Four-pool allocation model.</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 18 }}>
@@ -41,7 +41,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section style={{ padding: "56px 0" }}>
+        <section id="security" style={{ padding: "56px 0" }}>
           <div style={{ ...ui.wrap, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 18 }}>
             {securityControls.map((item) => <div style={ui.card} key={item}>{item}</div>)}
           </div>
