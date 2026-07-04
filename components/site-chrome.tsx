@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { platform } from "@/lib/platform-data";
+import { platform } from "../lib/platform-data";
 
 export function SiteNav() {
   return (
