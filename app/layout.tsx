@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   },
   description:
     'Prototype website and investor portal for a long-term diversified investment platform. Demo only — no live deposits or withdrawals.',
+  robots: { index: false, follow: false },
 };
 
 const navLinks = [

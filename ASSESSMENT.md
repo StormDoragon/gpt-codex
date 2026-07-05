@@ -81,7 +81,7 @@ Each allocation pool on `/` renders literal **"Lorem ipsum description for this 
 10. Add GitHub Actions CI: install → lint → typecheck → build on every PR. This is the guardrail that would have caught C1–C4.
 11. Expand `README.md`: what the project is, setup, scripts, architecture notes, deploy target.
 
-### Phase 3 — Make the prototype worthy of demoing (iterative)
+### Phase 3 — Make the prototype worthy of demoing (iterative) ✅ *Completed on this branch*
 
 12. **Working apply flow:** submit the form to an API route / server action with validation, store applications (even a JSON/SQLite queue), and surface them in the admin "Investor applications" queue so the demo tells a full story.
 13. **Mock auth gating** for `/investor` and `/admin` — the site advertises "role-based access with 2FA"; even a demo login screen makes the claim credible and keeps the admin view from being world-readable when deployed.

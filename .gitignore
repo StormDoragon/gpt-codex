@@ -9,3 +9,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 tsconfig.tsbuildinfo
+
+# Runtime-written demo application queue
+/data/applications.json
+
+# Playwright
+/test-results
+/playwright-report
+/playwright/.cache

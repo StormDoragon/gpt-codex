@@ -340,6 +340,63 @@ h2 {
   line-height: 1.65;
 }
 
+.notice code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .1);
+  font-size: .9em;
+}
+
+.notice-error {
+  border-color: rgba(255, 138, 138, .38);
+  background: rgba(255, 138, 138, .08);
+  color: var(--red);
+}
+
+/* Session bar */
+
+.session-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.session-signout {
+  min-height: 40px;
+  padding: 0 16px;
+}
+
+/* Compact buttons & row actions */
+
+.btn-sm {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: .85rem;
+}
+
+.btn-danger {
+  border-color: rgba(255, 138, 138, .38);
+  color: var(--red);
+}
+
+.row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
 .section-head {
   display: flex;
   justify-content: space-between;

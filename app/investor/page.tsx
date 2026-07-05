@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { SessionBar } from '../../components/session-bar';
+import { getSessionRole } from '../../lib/auth';
 import { investorMetrics, performanceRows, pools } from '../../lib/platform-data';
 
 export const metadata: Metadata = {
@@ -6,9 +9,15 @@ export const metadata: Metadata = {
 };
 
 export default function InvestorPortalPage() {
+  const role = getSessionRole();
+  if (!role) {
+    redirect('/login?next=/investor');
+  }
+
   return (
     <main className="section">
       <div className="container stack">
+        <SessionBar role={role} />
         <div>
           <p className="eyebrow">Investor Portal Preview</p>
           <h1 className="page-title">Secure capital tracking dashboard.</h1>
@@ -47,26 +56,28 @@ export default function InvestorPortalPage() {
 
         <section className="card">
           <h2>Performance Snapshot</h2>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Period</th>
-                <th>Result</th>
-                <th>Drawdown</th>
-                <th>Note</th>
-              </tr>
-            </thead>
-            <tbody>
-              {performanceRows.map((row) => (
-                <tr key={row.period}>
-                  <td>{row.period}</td>
-                  <td>{row.result}</td>
-                  <td>{row.drawdown}</td>
-                  <td>{row.note}</td>
+          <div className="table-scroll">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th scope="col">Period</th>
+                  <th scope="col">Result</th>
+                  <th scope="col">Drawdown</th>
+                  <th scope="col">Note</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {performanceRows.map((row) => (
+                  <tr key={row.period}>
+                    <td>{row.period}</td>
+                    <td>{row.result}</td>
+                    <td>{row.drawdown}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </main>
