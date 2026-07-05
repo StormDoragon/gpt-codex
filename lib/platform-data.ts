@@ -3,6 +3,7 @@ export type Pool = {
   allocation: number;
   description: string;
   risk: string;
+  color: string;
 };
 
 export type Metric = {
@@ -25,25 +26,29 @@ export const pools: Pool[] = [
     name: "Stocks",
     allocation: 30,
     description: "Long-term public market exposure with disciplined position sizing, reporting, and risk controls.",
-    risk: "Market volatility, company-specific risk, and liquidity risk."
+    risk: "Market volatility, company-specific risk, and liquidity risk.",
+    color: "#63d5ff"
   },
   {
     name: "Forex",
     allocation: 25,
     description: "Currency strategy exposure with strict drawdown controls and transparent performance reporting.",
-    risk: "Leverage, counterparty, macro, and execution risk."
+    risk: "Leverage, counterparty, macro, and execution risk.",
+    color: "#e2b75e"
   },
   {
     name: "Real Estate",
     allocation: 25,
     description: "Real asset exposure focused on income potential, asset-backed value, and multi-year compounding.",
-    risk: "Illiquidity, valuation changes, interest-rate risk, and property-level risk."
+    risk: "Illiquidity, valuation changes, interest-rate risk, and property-level risk.",
+    color: "#73e2a7"
   },
   {
     name: "IT Businesses",
     allocation: 20,
     description: "Operating-business exposure across digital infrastructure, software, automation, and service businesses.",
-    risk: "Execution, revenue concentration, technology, and operator risk."
+    risk: "Execution, revenue concentration, technology, and operator risk.",
+    color: "#b48cf2"
   }
 ];
 

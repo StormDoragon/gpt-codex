@@ -64,7 +64,7 @@ Each allocation pool on `/` renders literal **"Lorem ipsum description for this 
 
 ## 5. The plan
 
-### Phase 1 — Make it one coherent site (highest priority, ~1 day)
+### Phase 1 — Make it one coherent site (highest priority, ~1 day) ✅ *Completed on this branch*
 
 1. **Pick one router and one styling system.** Recommended: consolidate on the **App Router** (Next's strategic direction) with the existing custom-CSS design system (it's what the polished 80% of the site uses — adopting Tailwind properly is a bigger job for no visual gain). Move `investor`, `admin`, `apply`, `disclosures` into `app/`, convert `Frame` into the root `app/layout.tsx`, delete the `pages/` directory and `styles/globals.css`.
 2. **Rebuild the homepage** in the surviving design system: hero, four-pool allocation section (keep the Recharts donut as a client component), security section — sourcing all copy from `lib/platform-data.ts`. This kills C1 and C4 together.

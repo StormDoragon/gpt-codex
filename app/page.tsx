@@ -1,110 +1,106 @@
-'use client';
+import Link from 'next/link';
+import { AllocationChart } from '../components/allocation-chart';
+import { platform, pools, securityControls } from '../lib/platform-data';
 
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-
-const allocation = [
-  { name: 'Stocks', value: 30, color: '#22d3ee' },
-  { name: 'Forex', value: 25, color: '#a855f7' },
-  { name: 'Real Estate', value: 25, color: '#eab308' },
-  { name: 'IT Businesses', value: 20, color: '#10b981' },
-];
-
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full border-b border-white/10 bg-zinc-950/80 backdrop-blur-lg z-50">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
-          <div className="text-2xl font-semibold tracking-tight">PrivateCapital</div>
-          <div className="flex gap-8 text-sm">
-            <a href="#portfolio" className="hover:text-cyan-400 transition">Portfolio</a>
-            <a href="#documents" className="hover:text-cyan-400 transition">Documents</a>
-            <a href="#admin" className="hover:text-cyan-400 transition">Admin</a>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="pt-32 pb-20 px-6 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
-            Private Capital.<br />
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              Structured for the Long Term.
-            </span>
+    <main>
+      <section className="hero">
+        <div className="container">
+          <p className="eyebrow">Long-term diversified investment platform</p>
+          <h1>
+            Private Capital.
+            <br />
+            Structured for the Long Term.
           </h1>
-          <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-            Premium investor portal for diversified long-term capital across public markets, real assets, and operating businesses.
+          <p className="lede">
+            Premium investor portal for diversified long-term capital across public markets, real assets, and
+            operating businesses. Built review-first: applications, disclosures, and admin approval before any
+            funding flow.
           </p>
-          <div className="mt-10 flex gap-4 justify-center">
-            <button className="px-8 py-4 bg-white text-black rounded-2xl font-medium hover:bg-white/90 transition">
-              Investor Login
-            </button>
-            <button className="px-8 py-4 border border-white/30 rounded-2xl hover:bg-white/5 transition">
-              Learn More
-            </button>
+          <div className="actions">
+            <Link href="/apply" className="btn primary">
+              Apply for access
+            </Link>
+            <Link href="/investor" className="btn">
+              Investor portal preview
+            </Link>
+            <Link href="/disclosures" className="btn">
+              Read the disclosures
+            </Link>
+          </div>
+          <div className="meta-strip">
+            <div className="card">
+              <p>Minimum investment</p>
+              <strong>{platform.minimumInvestment}</strong>
+            </div>
+            <div className="card">
+              <p>Lock period</p>
+              <strong>{platform.lockPeriod}</strong>
+            </div>
+            <div className="card">
+              <p>Status</p>
+              <strong>Prototype — no live money movement</strong>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Allocation Model */}
-      <section id="portfolio" className="py-20 bg-zinc-900">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-4xl font-semibold text-center mb-4">Four-Pool Allocation Model</h2>
-          <p className="text-center text-zinc-400 mb-16">Diversified • Risk-Managed • Long-term Focus</p>
-
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Chart */}
-            <div className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={allocation} cx="50%" cy="50%" innerRadius={100} outerRadius={160} dataKey="value">
-                    {allocation.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+      <section id="model" className="section">
+        <div className="container">
+          <div className="section-head">
+            <h2>Four-Pool Allocation Model</h2>
+            <p>Diversified across four pools with disciplined sizing, transparent reporting, and a long-term focus.</p>
+          </div>
+          <div className="grid-2">
+            <div className="card">
+              <AllocationChart />
             </div>
-
-            {/* Details */}
-            <div className="space-y-10">
-              {allocation.map((pool, i) => (
-                <div key={i} className="flex gap-6">
-                  <div className="w-4 h-4 mt-2 rounded-full" style={{ backgroundColor: pool.color }}></div>
-                  <div>
-                    <div className="flex justify-between">
-                      <h3 className="font-semibold text-xl">{pool.name}</h3>
-                      <span className="text-2xl font-bold text-white/90">{pool.value}%</span>
-                    </div>
-                    <p className="text-zinc-400 mt-2">Lorem ipsum description for this pool...</p>
-                  </div>
-                </div>
+            <div className="stack">
+              {pools.map((pool) => (
+                <article className="card" key={pool.name}>
+                  <span className="pool-percent" style={{ color: pool.color }}>
+                    {pool.allocation}%
+                  </span>
+                  <h3>{pool.name}</h3>
+                  <p>{pool.description}</p>
+                  <p>
+                    <strong>Key risks:</strong> {pool.risk}
+                  </p>
+                </article>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features / Trust */}
-      <section className="py-20 px-6 bg-zinc-950">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
-          {[
-            { title: 'Role-Based Access', desc: 'Investor & Admin portals with 2FA' },
-            { title: 'Secure Documents', desc: 'Private storage with signed URLs' },
-            { title: 'Risk Controls', desc: 'Transparent reporting and drawdown limits' },
-          ].map((feature, i) => (
-            <div key={i} className="bg-zinc-900/50 border border-white/10 p-8 rounded-3xl hover:border-cyan-500/30 transition">
-              <h4 className="text-2xl font-semibold mb-3">{feature.title}</h4>
-              <p className="text-zinc-400">{feature.desc}</p>
-            </div>
-          ))}
+      <section id="security" className="section">
+        <div className="container">
+          <div className="section-head">
+            <h2>Security &amp; Governance Model</h2>
+            <p>
+              Controls the platform is designed around before any production integration goes live.
+            </p>
+          </div>
+          <div className="split-grid">
+            {securityControls.map((control) => (
+              <div className="card" key={control}>
+                <span className="badge">Control</span>
+                <p style={{ marginTop: 14, marginBottom: 0 }}>{control}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <footer className="py-12 text-center text-zinc-500 text-sm border-t border-white/10">
-        Prototype only • Not investment advice
-      </footer>
-    </div>
+      <section className="section">
+        <div className="container">
+          <div className="notice">
+            Ready to look deeper? Review the <Link href="/disclosures"><u>risk disclosures</u></Link>, then{' '}
+            <Link href="/apply"><u>apply for access</u></Link>. {platform.disclaimer}
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
