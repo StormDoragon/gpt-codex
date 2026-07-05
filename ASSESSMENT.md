@@ -73,7 +73,7 @@ Each allocation pool on `/` renders literal **"Lorem ipsum description for this 
 5. **Delete dead code:** `site-chrome.tsx`, `Site.module.css`, `app-wrapper.tsx`, the duplicate global stylesheet, and the `lucide-react` dependency.
 6. **Fold `frame.tsx`'s inline `ui` object into CSS classes** so there is exactly one place styles live.
 
-### Phase 2 — Engineering hygiene (~half day)
+### Phase 2 — Engineering hygiene (~half day) ✅ *Completed on this branch (Node pin is 22, not 20 — Node 20 reached end-of-life in April 2026)*
 
 7. Commit `package-lock.json`; add `engines` + `.nvmrc` (Node 20).
 8. Add ESLint (`next lint` + `eslint-config-next`) and a `typecheck` script (`tsc --noEmit`); fix whatever they surface.
