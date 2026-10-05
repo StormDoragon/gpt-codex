@@ -22,7 +22,9 @@ export function DeleteWorkspaceForm({ workspaceSlug, workspaceName }: { workspac
     <form action={formAction}>
       <input type="hidden" name="workspace" value={workspaceSlug} />
       <label className="field" htmlFor="delete-workspace-confirm">
-        Type <strong>{workspaceName}</strong> to confirm
+        <span>
+          Type <strong>{workspaceName}</strong> to confirm
+        </span>
         <input id="delete-workspace-confirm" name="confirm" autoComplete="off" required />
       </label>
       {state.error ? (

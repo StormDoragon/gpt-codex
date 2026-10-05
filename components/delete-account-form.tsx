@@ -21,7 +21,9 @@ export function DeleteAccountForm({ email }: { email: string }) {
   return (
     <form action={formAction}>
       <label className="field" htmlFor="delete-account-confirm">
-        Type your email <strong>{email}</strong> to confirm
+        <span>
+          Type your email <strong>{email}</strong> to confirm
+        </span>
         <input id="delete-account-confirm" name="confirm" autoComplete="off" required />
       </label>
       {state.error ? (
