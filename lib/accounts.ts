@@ -1,9 +1,9 @@
-import { createHash, randomBytes } from 'crypto';
 import { and, eq, gt, like, lt, or } from 'drizzle-orm';
 import { hashPassword, verifyPassword } from './auth/password';
 import { getDb, schema } from './db';
 import { uniqueViolationConstraint } from './db/errors';
 import { slugify } from './slug';
+import { hashToken, newToken } from './tokens';
 
 const { users, workspaces, memberships, sessions } = schema;
 
@@ -83,12 +83,10 @@ export async function authenticate(email: string, password: string): Promise<Ses
   return { id: user.id, email: user.email, name: user.name };
 }
 
-const hashToken = (token: string) => createHash('sha256').update(token).digest('hex');
-
 /** Creates a session and returns the raw token. Only its hash is stored. */
 export async function createSessionRow(userId: string): Promise<{ token: string; expiresAt: Date }> {
   const db = await getDb();
-  const token = randomBytes(32).toString('base64url');
+  const token = newToken();
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
   await db.insert(sessions).values({ tokenHash: hashToken(token), userId, expiresAt });
   // Housekeeping: drop this user's expired sessions.

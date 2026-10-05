@@ -1,46 +1,5 @@
-import { test, expect, type Browser, type Page } from '@playwright/test';
-
-const PASSWORD = 'correct horse battery staple';
-
-let sequence = 0;
-const unique = () => `${Date.now().toString(36)}${(sequence++).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-
-type Account = { name: string; workspace: string; email: string; slug: string };
-
-/** Creates an account + workspace through the real signup form. */
-async function signUp(page: Page, label: string, email?: string): Promise<Account> {
-  const id = unique();
-  const account = {
-    name: `${label} Owner`,
-    workspace: `${label} Capital ${id}`,
-    email: email ?? `${label.toLowerCase()}-${id}@example.com`,
-  };
-  await page.goto('/signup');
-  await page.fill('#signup-name', account.name);
-  await page.fill('#signup-workspace', account.workspace);
-  await page.fill('#signup-email', account.email);
-  await page.fill('#signup-password', PASSWORD);
-  await page.getByRole('button', { name: /create workspace/i }).click();
-  await expect(page).toHaveURL(/\/w\/[^/]+\/admin$/);
-  return { ...account, slug: new URL(page.url()).pathname.split('/')[2] };
-}
-
-/** Submits the public intake form for a workspace, as an anonymous visitor. */
-async function apply(page: Page, slug: string, name: string) {
-  await page.goto(`/w/${slug}/apply`);
-  await page.fill('#apply-name', name);
-  await page.fill('#apply-email', `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`);
-  await page.check('#apply-risk');
-  await page.getByRole('button', { name: /submit application/i }).click();
-  await expect(page.getByRole('status')).toContainText(/received your application/i);
-}
-
-async function freshPage(browser: Browser, baseURL: string | undefined) {
-  const context = await browser.newContext({ baseURL });
-  return { context, page: await context.newPage() };
-}
-
-const formAlert = (page: Page) => page.locator('form [role=alert]');
+import { test, expect } from '@playwright/test';
+import { PASSWORD, apply, formAlert, freshPage, signUp } from './helpers';
 
 test.describe('public site', () => {
   test('homepage presents the product honestly', async ({ page }) => {

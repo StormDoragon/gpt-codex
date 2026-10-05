@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AdminTabs } from '../../../../components/admin-tabs';
 import { SessionBar } from '../../../../components/session-bar';
 import { countApplicationsByStatus, listApplications, listRecentActivity } from '../../../../lib/applications';
+import { formatCents } from '../../../../lib/money';
 import { MANAGER_ROLES, requireMembership } from '../../../../lib/tenancy';
 import { reviewApplicationAction } from './actions';
+import { addInvestorFromApplication } from './investors/actions';
 
 export const metadata: Metadata = { title: 'Admin console' };
 
@@ -16,7 +19,23 @@ const statusBadge: Record<string, string> = {
 const actionLabel: Record<string, string> = {
   'application.approved': 'approved an application',
   'application.rejected': 'rejected an application',
+  'investor.created': 'added an investor',
+  'ledger.commitment': 'recorded a commitment',
+  'ledger.capital_call': 'recorded a capital call',
+  'ledger.distribution': 'recorded a distribution',
+  'invitation.created': 'created an investor invitation',
+  'invitation.accepted': 'accepted an invitation',
 };
+
+type ActivityMetadata = { applicant?: string; name?: string; amountCents?: number };
+
+function describeDetail(metadata: unknown): string {
+  const { applicant, name, amountCents } = (metadata ?? {}) as ActivityMetadata;
+  if (applicant) return ` from ${applicant}`;
+  if (typeof amountCents === 'number') return `: ${formatCents(amountCents)}`;
+  if (name) return `: ${name}`;
+  return '';
+}
 
 const dateFormat = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 const timeFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' });
@@ -35,6 +54,7 @@ export default async function AdminPage({ params }: { params: { slug: string } }
     <main className="section">
       <div className="container stack">
         <SessionBar user={user} workspace={workspace} role={role} />
+        <AdminTabs slug={workspace.slug} active="applications" />
         <div>
           <p className="eyebrow">Admin console</p>
           <h1 className="page-title">Review applications for {workspace.name}.</h1>
@@ -129,6 +149,18 @@ export default async function AdminPage({ params }: { params: { slug: string } }
                               </form>
                             ))}
                           </div>
+                        ) : application.status === 'approved' && application.investorId ? (
+                          <Link className="btn btn-sm" href={`/w/${workspace.slug}/admin/investors/${application.investorId}`}>
+                            View investor<span className="sr-only"> {application.name}</span>
+                          </Link>
+                        ) : application.status === 'approved' ? (
+                          <form action={addInvestorFromApplication}>
+                            <input type="hidden" name="workspace" value={workspace.slug} />
+                            <input type="hidden" name="applicationId" value={application.id} />
+                            <button type="submit" className="btn btn-sm" aria-label={`Add ${application.name} as an investor`}>
+                              Add as investor
+                            </button>
+                          </form>
                         ) : (
                           <span className="muted">Reviewed</span>
                         )}
@@ -147,17 +179,13 @@ export default async function AdminPage({ params }: { params: { slug: string } }
             <p>Decisions you make will appear here.</p>
           ) : (
             <ul className="activity-list">
-              {activity.map((entry) => {
-                const applicant = (entry.metadata as { applicant?: string } | null)?.applicant;
-                return (
-                  <li key={entry.id}>
-                    <strong>{entry.actorName ?? 'A former member'}</strong>{' '}
-                    {actionLabel[entry.action] ?? entry.action}
-                    {applicant ? ` from ${applicant}` : ''} ·{' '}
-                    <span className="muted">{timeFormat.format(entry.createdAt)} UTC</span>
-                  </li>
-                );
-              })}
+              {activity.map((entry) => (
+                <li key={entry.id}>
+                  <strong>{entry.actorName ?? 'A former member'}</strong> {actionLabel[entry.action] ?? entry.action}
+                  {describeDetail(entry.metadata)} ·{' '}
+                  <span className="muted">{timeFormat.format(entry.createdAt)} UTC</span>
+                </li>
+              ))}
             </ul>
           )}
         </section>

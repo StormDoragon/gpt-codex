@@ -15,8 +15,11 @@ Pre-release software that gives emerging fund managers a branded investor portal
 | Public investor intake form per workspace (`/w/<slug>/apply`) | Available |
 | Manager review queue: approve / reject, live counts | Available |
 | Audit log of every decision, shown as recent activity | Available |
-| Investor dashboard | Preview with **sample data** |
-| Invites, roles beyond owner, reporting, document vault, 2FA, billing | Not built yet (see the plan) |
+| Investor register per workspace, with an append-only ledger of commitments, capital calls and distributions (records only; no money moves) | Available |
+| Invitations: single-use, expiring links the manager sends; the investor creates an account or signs in as the invited email | Available |
+| Investor dashboard: each investor sees only their own real figures and activity | Available |
+| Manager's investor view preview | Sample data, clearly labelled |
+| Email delivery of invitations, teammate (admin) invites, configurable intake form, reporting, document vault, 2FA, white-labelling, billing | Not built yet (see the plan) |
 
 ## Stack
 
@@ -84,19 +87,25 @@ See `.env.example`.
 - **Authorization.** `requireMembership` in `lib/tenancy.ts` is the single gate for workspace pages and server actions. A signed-in user without a role in the workspace gets a 404, which does not reveal whether it exists. Server actions re-check it themselves, since actions can be invoked directly.
 - **Sessions.** Random 256-bit tokens in an `httpOnly`, `SameSite=Lax`, `Secure` (production) cookie. Only a SHA-256 of the token is stored.
 - **Passwords.** scrypt (N=2^15, r=8, p=3) with a per-password salt, minimum 10 characters. Unknown-email logins take as long as wrong-password ones.
-- **Tests.** The tenant-isolation suites include an attack test that edits form fields in the browser to review another tenant's application. It was mutation-checked: removing the workspace filter makes it fail.
+- **Database-enforced tenancy.** Ledger entries and invitations reference their investor through a composite foreign key `(investor_id, workspace_id)`, so the database itself rejects a row whose workspace differs from its investor's, whatever the application code does. Ledger amounts are positive integer cents (a `CHECK` enforces it) and entries are never edited.
+- **Investor privacy inside a workspace.** An investor's data is found through their own login (`getOwnPortfolio`); no parameter can select another investor. Tests prove two investors in one workspace never receive each other's figures.
+- **Invitations.** 256-bit tokens, stored only as a SHA-256, single-use (claimed with one atomic `UPDATE`), 7-day expiry, and revoked when a new link is issued. The invited email is fixed by the invitation. The link page sends `Referrer-Policy: no-referrer` so the token can't leak.
+- **Capital calls** cannot exceed the uncalled commitment, checked and inserted under a row lock so simultaneous calls can't both pass.
+- **Server actions authorize themselves.** Actions can be called directly, bypassing pages, so each re-checks membership and role. A structural test requires every manager action to call `requireMembership`, and an e2e test captures real action requests and replays them from an investor and an anonymous client.
+- **Tests.** Data-layer tests (64) run on embedded and real Postgres. The e2e suite (19) includes browser attacks that tamper with form fields to act on another tenant. All of it was mutation-checked: removing a workspace filter, the row lock, the single-use claim, the investor filter, or the role check makes a test fail.
 - **Not done yet:** login rate limiting, 2FA, row-level security in Postgres as a second layer, a CSP, and a security review. These are tracked in the plan.
 
 ## Project layout
 
 | Path | Purpose |
 |---|---|
-| `app/` | Routes: marketing home, `/signup`, `/login`, `/workspaces`, `/legal`, and `/w/[slug]/{apply,admin,investor}` |
-| `app/**/actions.ts` | Server actions (signup, login/logout, apply, review) |
-| `components/` | Client components (forms, session bar, allocation chart) |
+| `app/` | Routes: marketing home, `/signup`, `/login`, `/workspaces`, `/legal`, `/invite/[token]`, and `/w/[slug]/{apply,admin,admin/investors,investor}` |
+| `app/**/actions.ts` | Server actions (signup, login/logout, apply, review, investors, ledger, invitations) |
+| `components/` | Client components (forms, invite panel, session bar, allocation chart) |
 | `lib/db/` | Drizzle schema, driver selection (Postgres / PGlite), error helpers |
 | `drizzle/` | Generated SQL migrations (commit these) |
-| `lib/accounts.ts` `lib/workspaces.ts` `lib/applications.ts` | Data access. Pure database code, unit-tested |
+| `lib/accounts.ts` `lib/workspaces.ts` `lib/applications.ts` `lib/investors.ts` `lib/invitations.ts` | Data access. Pure database code, unit-tested |
+| `lib/money.ts` | Dollar parsing to integer cents and formatting (no floating point) |
 | `lib/tenancy.ts` `lib/auth/` | Authorization guard and cookie/session layer |
 | `lib/product.ts` | Product name and legal disclaimer |
 | `lib/sample-data.ts` | Illustrative data for the investor preview |

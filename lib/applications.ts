@@ -2,7 +2,7 @@ import { and, count, desc, eq } from 'drizzle-orm';
 import { getDb, schema } from './db';
 import type { ApplicationStatus } from './db/schema';
 
-const { applications, auditLog, users } = schema;
+const { applications, auditLog, investors, users } = schema;
 
 // Tenant isolation rule: every function here takes the workspace id and puts it
 // in the WHERE clause of every statement. Callers get that id from a verified
@@ -22,26 +22,49 @@ export type ApplicationRow = ApplicationInput & {
   id: string;
   status: ApplicationStatus;
   submittedAt: Date;
+  /** Set once the applicant has been added as an investor. */
+  investorId: string | null;
+};
+
+const applicationColumns = {
+  id: applications.id,
+  name: applications.name,
+  email: applications.email,
+  phone: applications.phone,
+  country: applications.country,
+  amount: applications.amount,
+  accredited: applications.accredited,
+  notes: applications.notes,
+  status: applications.status,
+  submittedAt: applications.submittedAt,
+  investorId: investors.id,
 };
 
 export async function listApplications(workspaceId: string): Promise<ApplicationRow[]> {
   const db = await getDb();
   return db
-    .select({
-      id: applications.id,
-      name: applications.name,
-      email: applications.email,
-      phone: applications.phone,
-      country: applications.country,
-      amount: applications.amount,
-      accredited: applications.accredited,
-      notes: applications.notes,
-      status: applications.status,
-      submittedAt: applications.submittedAt,
-    })
+    .select(applicationColumns)
     .from(applications)
+    .leftJoin(
+      investors,
+      and(eq(investors.applicationId, applications.id), eq(investors.workspaceId, applications.workspaceId)),
+    )
     .where(eq(applications.workspaceId, workspaceId))
     .orderBy(desc(applications.submittedAt));
+}
+
+export async function getApplication(workspaceId: string, applicationId: string): Promise<ApplicationRow | null> {
+  const db = await getDb();
+  const [row] = await db
+    .select(applicationColumns)
+    .from(applications)
+    .leftJoin(
+      investors,
+      and(eq(investors.applicationId, applications.id), eq(investors.workspaceId, applications.workspaceId)),
+    )
+    .where(and(eq(applications.workspaceId, workspaceId), eq(applications.id, applicationId)))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function countApplicationsByStatus(workspaceId: string): Promise<Record<ApplicationStatus, number>> {

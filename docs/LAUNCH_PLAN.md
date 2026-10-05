@@ -59,13 +59,22 @@ Each milestone has exit criteria. Don't start the next one until the current one
 - **Tech, still open (needs the owner's accounts):** a hosted Postgres, a Vercel project and preview deployment, secrets set on the host, a domain.
 - **Exit criterion (isolation proven by tests): met.** Unit tests on both drivers plus a browser attack test, mutation-checked, all run in CI against Postgres. Only the *preview deployment* half of the exit criterion waits on accounts.
 
-### M2: MVP product (Oct 19–Nov 15)
-- Workspaces and roles (owner / admin / investor), email invites.
-- Configurable intake form → review queue → approve / reject, with notification emails.
-- Investor dashboard driven by real records. The ledger *records* commitments, calls and distributions but moves no money.
-- Document vault with signed URLs, plus an audit log on every review and publish action.
+### M2: MVP product (Oct 19–Nov 15): core loop ✅, remainder open
+**Done (first slice, verified):**
+- ✅ Investor register per workspace and an append-only ledger of commitments, capital calls and distributions. It *records* what the manager reports and moves no money. Capital calls cannot exceed the uncalled commitment (row-locked, concurrency-tested).
+- ✅ Invitations: single-use, expiring, hashed-at-rest links; the investor creates an account or signs in as the invited email. Re-issuing a link revokes the old one.
+- ✅ Investor dashboard driven by real records. Each investor sees only their own figures (tested between investors in the same workspace and across workspaces).
+- ✅ Audit log on investor creation, every ledger entry, and invitation creation/acceptance, shown as recent activity.
+- ✅ Tenant isolation hardened at the database: composite foreign keys make cross-workspace ledger/invitation rows impossible, regardless of application code.
+- ✅ Authorization of server actions tested directly (replayed requests from an investor and an anonymous client), plus a structural test and mutation checks.
+
+**Still open in M2:**
+- Email delivery of invitations and notifications (needs an email provider account; today the manager copies the link).
+- Teammate (admin) invites, so a workspace can have more than one manager.
+- Configurable intake form.
+- Document vault with signed URLs, and publishing reporting.
 - 2FA (TOTP or passkeys). White-label basics: logo, colors, custom domain.
-- Exit: one design partner can run a real (small) raise's investor onboarding end-to-end.
+- Exit: one design partner can run a real (small) raise's investor onboarding end-to-end. The core loop for that exists now; it needs a hosted deployment and a design partner.
 
 ### M3: Money for us + hardening (Nov 16–29)
 - Stripe subscriptions: free tier (1 fund, ≤10 investors), Pro, Scale. *Pricing is a hypothesis; test it in interviews.*
