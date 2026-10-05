@@ -30,7 +30,7 @@ So the plan **does not** include collecting deposits, advertising returns, or gr
 
 The repo already contains the skeleton of **investor-portal software**: apply → intake review queue → admin approval → investor dashboard (commitment, lock period, reporting) → disclosures. That's what small fund managers, syndicate leads, SPV sponsors and real-estate sponsors currently run on spreadsheets, email and PDFs.
 
-**Proposed product:** *an investor portal in a box for emerging managers.* The manager gets a branded workspace, invites their investors, reviews applications, publishes reporting and shares documents. **The software never touches money**, since capital moves through the manager's own bank and administrator. That sidesteps money-transmission and custody entirely, and makes this a normal SaaS business.
+**Chosen product (direction confirmed by the owner, 2026-10-05):** *an investor portal in a box for emerging managers.* The manager gets a branded workspace, invites their investors, reviews applications, publishes reporting and shares documents. **The software never touches money**, since capital moves through the manager's own bank and administrator. That sidesteps money-transmission and custody entirely, and makes this a normal SaaS business.
 
 Hypotheses to **validate with interviews before building too much** (incumbents such as Juniper Square and Carta exist and mostly serve larger managers):
 
@@ -51,12 +51,13 @@ Each milestone has exit criteria. Don't start the next one until the current one
 - **Found and fixed a forgeable session cookie.** `demo-session=admin` used to open the admin console. Sessions are now HMAC-signed and expiring, with per-role codes, no production defaults, and a regression test.
 - Baseline security headers.
 
-### M1: Foundation + validation (Oct 5–18)
-- **Validate:** 15 interviews with target managers. Exit: ≥5 say they would trial it.
-- **Decide:** direction, product name and domain, and a legal entity.
-- **Legal:** counsel reviews positioning; draft ToS, privacy policy and DPA. They must state that we are software, not a broker, adviser or funding portal.
-- **Tech:** real Postgres (replace the JSON file store, which cannot persist on serverless hosting), real auth with accounts and email login, multi-tenant data model, migrations, secrets management, Vercel preview deployments.
-- Exit: a preview deployment where two test workspaces cannot see each other's data (proven by tests).
+### M1: Foundation + validation (Oct 5–18): engineering ✅, validation and legal open
+- **Validate:** 15 interviews with target managers. Exit: ≥5 say they would trial it. *(Open: needs the owner.)*
+- **Decide:** ~~direction~~ ✅ confirmed. Product name and domain, and a legal entity are still open. "LP Portal" is a working name in `lib/product.ts`.
+- **Legal:** counsel reviews positioning; draft ToS, privacy policy and DPA. They must state that we are software, not a broker, adviser or funding portal. *(Open. The `/legal` page is a labelled draft; signup collects emails and passwords with no ToS or privacy policy yet, so keep it closed-beta only.)*
+- **Tech, done ✅:** Postgres data layer (Drizzle, generated SQL migrations; real Postgres in production, embedded PGlite for zero-setup dev), real accounts (scrypt passwords, server-side hashed sessions), multi-tenant model (workspaces and memberships), tenant-scoped data access with an audit log, closed-beta signup gate. The old JSON file store and shared-code demo auth are gone.
+- **Tech, still open (needs the owner's accounts):** a hosted Postgres, a Vercel project and preview deployment, secrets set on the host, a domain.
+- **Exit criterion (isolation proven by tests): met.** Unit tests on both drivers plus a browser attack test, mutation-checked, all run in CI against Postgres. Only the *preview deployment* half of the exit criterion waits on accounts.
 
 ### M2: MVP product (Oct 19–Nov 15)
 - Workspaces and roles (owner / admin / investor), email invites.
@@ -68,7 +69,8 @@ Each milestone has exit criteria. Don't start the next one until the current one
 
 ### M3: Money for us + hardening (Nov 16–29)
 - Stripe subscriptions: free tier (1 fund, ≤10 investors), Pro, Scale. *Pricing is a hypothesis; test it in interviews.*
-- Rate limiting, error monitoring, product analytics, backups and restore drill, data export and deletion.
+- Rate limiting (login, signup and the public intake form), error monitoring, product analytics, backups and restore drill, data export and deletion.
+- Postgres row-level security as a second layer behind the application-level tenant filters, and a Content-Security-Policy.
 - Accessibility audit (axe in CI, WCAG 2.2 AA), performance budget, OWASP ASVS L1 self-review.
 - Exit: the "worthy" bar in section 6 is met.
 
@@ -96,7 +98,7 @@ A realistic year-end bar is **3 paying customers (~$300–900 MRR)** with a vali
 
 ## 6. The "worthy" bar (ship criteria)
 
-- **Security:** signed sessions ✅, per-role access ✅, no default credentials in production ✅, tenant isolation tests, rate limiting, 2FA, audit log, secrets only via env.
+- **Security:** hashed passwords and revocable server-side sessions ✅, per-workspace authorization ✅, tenant isolation tests ✅, audit log of decisions ✅, fails closed without a production database ✅. Still to do: rate limiting, 2FA, row-level security, CSP, secrets only via env on the host.
 - **Quality:** CI green (lint, typecheck, build, e2e) ✅. Add axe accessibility checks and a Lighthouse budget (≥95 performance, ≥95 accessibility).
 - **Reliability:** error monitoring, uptime check, tested backup restore.
 - **Legal:** ToS, privacy policy, DPA, counsel-approved positioning.

@@ -1,75 +1,121 @@
 import Link from 'next/link';
-import { AllocationChart } from '../components/allocation-chart';
-import { platform, pools, securityControls } from '../lib/platform-data';
+import { product } from '../lib/product';
+
+const steps = [
+  {
+    title: 'Create your workspace',
+    body: 'One workspace per fund or firm, with its own investor intake link, its own data, and its own team.',
+    live: true,
+  },
+  {
+    title: 'Share your intake link',
+    body: 'Prospective investors apply through a form hosted for you. No more emailed spreadsheets or PDFs.',
+    live: true,
+  },
+  {
+    title: 'Review and approve',
+    body: 'Work through a single queue. Every approval and rejection is logged with who decided and when.',
+    live: true,
+  },
+  {
+    title: 'Publish reporting and documents',
+    body: 'Give each investor a private view of their commitment, statements and documents.',
+    live: false,
+  },
+];
+
+const controls = [
+  {
+    title: 'Tenant-isolated workspaces',
+    body: 'Every record belongs to exactly one workspace. Automated tests check that one workspace cannot read or change another’s data.',
+    live: true,
+  },
+  {
+    title: 'Audit log',
+    body: 'Application decisions are recorded with the person, the action and the time.',
+    live: true,
+  },
+  {
+    title: 'Hashed passwords, revocable sessions',
+    body: 'Passwords are hashed with scrypt. Sessions live server-side as hashes and end when you sign out.',
+    live: true,
+  },
+  {
+    title: 'Two-factor authentication',
+    body: 'Authenticator-app and passkey sign-in for managers and investors.',
+    live: false,
+  },
+  {
+    title: 'Document vault',
+    body: 'Private storage with short-lived signed links for subscription documents and statements.',
+    live: false,
+  },
+  {
+    title: 'Data export and deletion',
+    body: 'Self-serve export of everything in your workspace, and deletion on request.',
+    live: false,
+  },
+];
+
+function Availability({ live }: { live: boolean }) {
+  return <span className={live ? 'badge' : 'badge warning'}>{live ? 'Available now' : 'Coming soon'}</span>;
+}
 
 export default function HomePage() {
   return (
     <main>
       <section className="hero">
         <div className="container">
-          <p className="eyebrow">Long-term diversified investment platform</p>
+          <p className="eyebrow">Pre-release · for emerging fund managers</p>
           <h1>
-            Private Capital.
+            Your investor portal,
             <br />
-            Structured for the Long Term.
+            without the spreadsheet.
           </h1>
           <p className="lede">
-            Premium investor portal for diversified long-term capital across public markets, real assets, and
-            operating businesses. Built review-first: applications, disclosures, and admin approval before any
-            funding flow.
+            Collect investor applications, review and approve them, and keep an audit trail, all from a branded
+            workspace. {product.name} is software only: we never hold or move your investors&apos; money.
           </p>
           <div className="actions">
-            <Link href="/apply" className="btn primary">
-              Apply for access
+            <Link href="/signup" className="btn primary">
+              Create a workspace
             </Link>
-            <Link href="/investor" className="btn">
-              Investor portal preview
-            </Link>
-            <Link href="/disclosures" className="btn">
-              Read the disclosures
+            <Link href="/login" className="btn">
+              Sign in
             </Link>
           </div>
           <div className="meta-strip">
             <div className="card">
-              <p>Minimum investment</p>
-              <strong>{platform.minimumInvestment}</strong>
+              <p>Built for</p>
+              <strong>Syndicate leads, SPV sponsors, emerging managers</strong>
             </div>
             <div className="card">
-              <p>Lock period</p>
-              <strong>{platform.lockPeriod}</strong>
+              <p>Model</p>
+              <strong>One isolated workspace per fund</strong>
             </div>
             <div className="card">
-              <p>Status</p>
-              <strong>Prototype — no live money movement</strong>
+              <p>Money movement</p>
+              <strong>None. Software only.</strong>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="model" className="section">
+      <section id="how" className="section">
         <div className="container">
           <div className="section-head">
-            <h2>Four-Pool Allocation Model</h2>
-            <p>Diversified across four pools with disciplined sizing, transparent reporting, and a long-term focus.</p>
+            <h2>How it works</h2>
+            <p>The first three steps work today. Reporting and documents are next on the roadmap.</p>
           </div>
-          <div className="grid-2">
-            <div className="card">
-              <AllocationChart />
-            </div>
-            <div className="stack">
-              {pools.map((pool) => (
-                <article className="card" key={pool.name}>
-                  <span className="pool-percent" style={{ color: pool.color }}>
-                    {pool.allocation}%
-                  </span>
-                  <h3>{pool.name}</h3>
-                  <p>{pool.description}</p>
-                  <p>
-                    <strong>Key risks:</strong> {pool.risk}
-                  </p>
-                </article>
-              ))}
-            </div>
+          <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+            {steps.map((step, index) => (
+              <article className="card" key={step.title}>
+                <span className="pool-percent">{index + 1}</span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+                <Availability live={step.live} />
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -77,17 +123,16 @@ export default function HomePage() {
       <section id="security" className="section">
         <div className="container">
           <div className="section-head">
-            <h2>Security &amp; Governance Model</h2>
-            <p>
-              Controls the platform is designed around before any production integration goes live.
-            </p>
+            <h2>Security you can check, not just read</h2>
+            <p>What exists today and what does not, stated plainly.</p>
           </div>
           <div className="split-grid">
-            {securityControls.map((control) => (
-              <div className="card" key={control}>
-                <span className="badge">Control</span>
-                <p style={{ marginTop: 14, marginBottom: 0 }}>{control}</p>
-              </div>
+            {controls.map((control) => (
+              <article className="card" key={control.title}>
+                <Availability live={control.live} />
+                <h3 style={{ marginTop: 14 }}>{control.title}</h3>
+                <p style={{ marginBottom: 0 }}>{control.body}</p>
+              </article>
             ))}
           </div>
         </div>
@@ -96,8 +141,9 @@ export default function HomePage() {
       <section className="section">
         <div className="container">
           <div className="notice">
-            Ready to look deeper? Review the <Link href="/disclosures"><u>risk disclosures</u></Link>, then{' '}
-            <Link href="/apply"><u>apply for access</u></Link>. {platform.disclaimer}
+            <strong>What this is not.</strong> {product.disclaimer} Each manager is responsible for their own
+            offering and compliance. Read the <Link href="/legal"><u>important notice</u></Link>, or{' '}
+            <Link href="/signup"><u>create a workspace</u></Link> to try it.
           </div>
         </div>
       </section>

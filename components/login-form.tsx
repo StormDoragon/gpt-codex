@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
 import { login, type LoginState } from '../app/login/actions';
 
@@ -9,28 +10,25 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="btn primary field full" disabled={pending}>
-      {pending ? 'Verifying…' : 'Enter demo portal'}
+      {pending ? 'Signing in…' : 'Sign in'}
     </button>
   );
 }
 
-export function LoginForm({ next, defaultRole }: { next: string; defaultRole: 'investor' | 'admin' }) {
+export function LoginForm({ next }: { next: string }) {
   const [state, formAction] = useFormState(login, initialState);
 
   return (
     <form className="card" action={formAction}>
       <input type="hidden" name="next" value={next} />
       <div className="form-grid">
-        <label className="field full" htmlFor="login-role">
-          Sign in as
-          <select id="login-role" name="role" defaultValue={defaultRole}>
-            <option value="investor">Investor</option>
-            <option value="admin">Administrator</option>
-          </select>
+        <label className="field full" htmlFor="login-email">
+          Email
+          <input id="login-email" name="email" type="email" autoComplete="email" maxLength={254} required />
         </label>
-        <label className="field full" htmlFor="login-code">
-          Access code
-          <input id="login-code" name="code" type="password" placeholder="Demo access code" required autoComplete="off" />
+        <label className="field full" htmlFor="login-password">
+          Password
+          <input id="login-password" name="password" type="password" autoComplete="current-password" required />
         </label>
         {state.error ? (
           <p className="notice notice-error field full" role="alert">
@@ -38,6 +36,9 @@ export function LoginForm({ next, defaultRole }: { next: string; defaultRole: 'i
           </p>
         ) : null}
         <SubmitButton />
+        <p className="field full" style={{ margin: 0 }}>
+          New here? <Link href="/signup"><u>Create a workspace</u></Link>
+        </p>
       </div>
     </form>
   );

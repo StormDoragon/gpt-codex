@@ -1,7 +1,7 @@
 'use client';
 
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { pools } from '../lib/platform-data';
+import { pools } from '../lib/sample-data';
 
 export function AllocationChart() {
   return (

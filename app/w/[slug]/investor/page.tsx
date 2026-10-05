@@ -1,29 +1,24 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import { SessionBar } from '../../components/session-bar';
-import { getSessionRole } from '../../lib/auth';
-import { investorMetrics, performanceRows, pools } from '../../lib/platform-data';
+import { AllocationChart } from '../../../../components/allocation-chart';
+import { SessionBar } from '../../../../components/session-bar';
+import { investorMetrics, performanceRows, sampleFund } from '../../../../lib/sample-data';
+import { ALL_ROLES, requireMembership } from '../../../../lib/tenancy';
 
-export const metadata: Metadata = {
-  title: 'Investor Portal',
-};
+export const metadata: Metadata = { title: 'Investor portal' };
 
-export default function InvestorPortalPage() {
-  const role = getSessionRole();
-  if (!role) {
-    redirect('/login?next=/investor');
-  }
+export default async function InvestorPortalPage({ params }: { params: { slug: string } }) {
+  const { user, workspace, role } = await requireMembership(params.slug, ALL_ROLES, `/w/${params.slug}/investor`);
 
   return (
     <main className="section">
       <div className="container stack">
-        <SessionBar role={role} />
+        <SessionBar user={user} workspace={workspace} role={role} />
         <div>
-          <p className="eyebrow">Investor Portal Preview</p>
-          <h1 className="page-title">Secure capital tracking dashboard.</h1>
-          <p className="lede">
-            Demo view for allocation, lock-period tracking, requests, documents, and reporting. All values are
-            sample data.
+          <p className="eyebrow">{workspace.name} · investor view</p>
+          <h1 className="page-title">Your commitments and reporting.</h1>
+          <p className="notice">
+            Preview: the figures below are <strong>sample data</strong> showing what investors will see.
+            Publishing real reporting and documents is not available yet.
           </p>
         </div>
 
@@ -39,23 +34,17 @@ export default function InvestorPortalPage() {
 
         <section className="split-grid">
           <div className="card">
-            <h2>Pool Allocation</h2>
-            {pools.map((pool) => (
-              <p key={pool.name}>
-                <strong>{pool.name}</strong>: {pool.allocation}%
-              </p>
-            ))}
+            <h2>Allocation ({sampleFund.name})</h2>
+            <AllocationChart />
           </div>
           <div className="card">
-            <h2>Request Status</h2>
-            <p>Deposit request: Under compliance review</p>
-            <p>Withdrawal request: Locked until Jan 1, 2029</p>
-            <p>Documents: Risk disclosure pending signature</p>
+            <h2>Documents</h2>
+            <p>A secure document vault for subscription agreements, statements and tax documents is coming soon.</p>
           </div>
         </section>
 
         <section className="card">
-          <h2>Performance Snapshot</h2>
+          <h2>Performance snapshot</h2>
           <div className="table-scroll">
             <table className="table">
               <thead>

@@ -1,42 +1,39 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
-import { platform } from '../lib/platform-data';
+import { product } from '../lib/product';
 
 export const metadata: Metadata = {
   title: {
-    default: platform.name,
-    template: `%s · ${platform.name}`,
+    default: `${product.name}: ${product.tagline}`,
+    template: `%s · ${product.name}`,
   },
   description:
-    'Prototype website and investor portal for a long-term diversified investment platform. Demo only — no live deposits or withdrawals.',
+    'Pre-release software for emerging fund managers: investor intake, review queues and an audit trail in one branded workspace. Software only; it never holds or moves money.',
   robots: { index: false, follow: false },
 };
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/#model', label: 'Strategy' },
+  { href: '/#how', label: 'How it works' },
   { href: '/#security', label: 'Security' },
-  { href: '/investor', label: 'Investor Portal' },
-  { href: '/admin', label: 'Admin' },
-  { href: '/disclosures', label: 'Disclosures' },
+  { href: '/legal', label: 'Legal' },
 ];
 
 const footerGroups = [
   {
-    title: 'Platform',
+    title: 'Product',
     links: [
-      { href: '/', label: 'Public website' },
-      { href: '/investor', label: 'Investor dashboard' },
-      { href: '/apply', label: 'Application flow' },
+      { href: '/#how', label: 'How it works' },
+      { href: '/#security', label: 'Security' },
     ],
   },
   {
-    title: 'Governance',
+    title: 'Account',
     links: [
-      { href: '/admin', label: 'Admin review' },
-      { href: '/disclosures', label: 'Risk disclosures' },
-      { href: '/#security', label: 'Security model' },
+      { href: '/login', label: 'Sign in' },
+      { href: '/signup', label: 'Create a workspace' },
+      { href: '/legal', label: 'Important notice' },
     ],
   },
 ];
@@ -48,18 +45,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <header className="site-header">
           <div className="header-topline">
             <div className="container header-topline-inner">
-              <span>Private market prototype</span>
-              <span>
-                {platform.minimumInvestment} minimum · {platform.lockPeriod} lock period · Demo controls only
-              </span>
+              <span>Pre-release · closed beta</span>
+              <span>Software only · we never hold or move your investors&apos; money</span>
             </div>
           </div>
           <div className="container nav-shell">
-            <Link href="/" className="brand-lockup" aria-label={`${platform.name} home`}>
-              <span className="brand-mark">G</span>
+            <Link href="/" className="brand-lockup" aria-label={`${product.name} home`}>
+              <span className="brand-mark">{product.name.charAt(0)}</span>
               <span>
-                <strong>{platform.name}</strong>
-                <small>Long-term capital operations</small>
+                <strong>{product.name}</strong>
+                <small>Investor portals for emerging managers</small>
               </span>
             </Link>
             <nav className="nav-menu" aria-label="Primary navigation">
@@ -68,9 +63,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   {link.label}
                 </Link>
               ))}
+              <Link href="/login">Sign in</Link>
             </nav>
-            <Link href="/apply" className="nav-cta">
-              Apply
+            <Link href="/signup" className="nav-cta">
+              Create workspace
             </Link>
           </div>
         </header>
@@ -79,17 +75,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <div className="container footer-grid">
             <div className="footer-brand">
               <Link href="/" className="brand-lockup">
-                <span className="brand-mark">G</span>
+                <span className="brand-mark">{product.name.charAt(0)}</span>
                 <span>
-                  <strong>{platform.name}</strong>
-                  <small>Investor reporting prototype</small>
+                  <strong>{product.name}</strong>
+                  <small>{product.tagline}</small>
                 </span>
               </Link>
-              <p>{platform.disclaimer}</p>
+              <p>{product.disclaimer}</p>
               <div className="footer-badges">
-                <span>Review-first onboarding</span>
-                <span>No live money movement</span>
-                <span>Audit-ready workflows</span>
+                <span>Software only</span>
+                <span>Tenant-isolated workspaces</span>
+                <span>Audit-logged reviews</span>
               </div>
             </div>
             {footerGroups.map((group) => (
@@ -103,16 +99,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </div>
             ))}
             <div className="footer-contact">
-              <h3>Operating posture</h3>
+              <h3>Status</h3>
               <p>
-                Designed for gated investor access, administrator approval queues, disclosure visibility, and
-                transparent sample reporting before production integrations.
+                Pre-release software in closed beta. Features marked &ldquo;coming soon&rdquo; are not available
+                yet.
               </p>
             </div>
           </div>
           <div className="container footer-bottom">
-            <span>© {new Date().getFullYear()} {platform.name}. All rights reserved.</span>
-            <span>Prototype environment · Not an offer · Not investment advice</span>
+            <span>
+              © {new Date().getFullYear()} {product.name}. All rights reserved.
+            </span>
+            <span>Not an offer · Not investment advice</span>
           </div>
         </footer>
       </body>

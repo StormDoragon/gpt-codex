@@ -3,12 +3,6 @@ import { defineConfig, devices } from '@playwright/test';
 const port = Number(process.env.PORT ?? 3000);
 const baseURL = `http://localhost:${port}`;
 
-// The production server fails closed without credentials, so the e2e run
-// supplies its own. The web server and the test workers both inherit these.
-process.env.DEMO_INVESTOR_CODE ??= 'e2e-investor-code';
-process.env.DEMO_ADMIN_CODE ??= 'e2e-admin-code';
-process.env.SESSION_SECRET ??= 'e2e-session-secret-not-for-production';
-
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
@@ -31,5 +25,13 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      // Use the Postgres in DATABASE_URL when given (CI does). Otherwise fall
+      // back to a throwaway in-memory embedded database so a local run needs
+      // no setup. Production still refuses to start without DATABASE_URL.
+      ALLOW_EMBEDDED_DB: '1',
+      PGLITE_DIR: 'memory://',
+      ...(process.env.DATABASE_URL ? { DATABASE_URL: process.env.DATABASE_URL } : {}),
+    },
   },
 });

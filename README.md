@@ -1,72 +1,111 @@
-# Global Standard Capital
+# LP Portal (working name)
 
-Premium fintech website and investor portal prototype for a long-term diversified investment platform.
+Pre-release software that gives emerging fund managers a branded investor portal: investor intake, an approval queue, and an audit trail, in one isolated workspace per fund.
 
-## Status
+**Software only.** It never holds or moves money and is not a broker-dealer, adviser, funding portal or bank. See [`docs/LAUNCH_PLAN.md`](./docs/LAUNCH_PLAN.md) for the product direction, milestones and the regulatory reasoning.
 
-This is a product prototype. It does not process real deposits or withdrawals, does not create accounts, and does not constitute an offer to sell securities or investment advice. All portfolio, performance, and queue numbers are sample data.
+> "LP Portal" is a working name. It lives in one place, `lib/product.ts`.
+
+## What works today
+
+| Area | Status |
+|---|---|
+| Accounts: email + password, server-side sessions, sign out | Available |
+| Workspaces: one isolated tenant per fund, owner membership | Available |
+| Public investor intake form per workspace (`/w/<slug>/apply`) | Available |
+| Manager review queue: approve / reject, live counts | Available |
+| Audit log of every decision, shown as recent activity | Available |
+| Investor dashboard | Preview with **sample data** |
+| Invites, roles beyond owner, reporting, document vault, 2FA, billing | Not built yet (see the plan) |
 
 ## Stack
 
-- [Next.js 14](https://nextjs.org/) (App Router, fully static output)
-- React 18 + TypeScript (strict)
-- [Recharts](https://recharts.org/) for the allocation donut chart
-- Custom CSS design system in `app/globals.css` (no CSS framework)
+- [Next.js 14](https://nextjs.org/) App Router, React 18, TypeScript (strict)
+- Postgres through [Drizzle ORM](https://orm.drizzle.team/): real Postgres in production (`postgres-js`), embedded [PGlite](https://pglite.dev/) for zero-setup development
+- Vitest for the data layer, Playwright for end-to-end tests
+- Custom CSS design system in `app/globals.css`
 
 ## Getting started
 
-Requires Node 20+ (see `.nvmrc`).
+Requires Node 20+ (`.nvmrc` pins 22).
 
 ```bash
-npm ci        # install exact locked dependencies
-npm run dev   # start the dev server on http://localhost:3000
+npm ci
+npm run dev        # http://localhost:3000, no database setup needed
 ```
 
-Other scripts:
+With no `DATABASE_URL`, development uses an embedded Postgres stored in `.data/pglite` (gitignored). Create an account at `/signup` and you land in your workspace's admin console.
+
+Using a real Postgres locally (optional):
 
 ```bash
-npm run build      # production build
-npm run start      # serve the production build
-npm run lint       # ESLint (next/core-web-vitals)
-npm run typecheck  # TypeScript, no emit
-npm run test:e2e   # Playwright smoke tests (builds/serves automatically)
+export DATABASE_URL=postgres://user:password@localhost:5432/portal
+npm run db:migrate
+npm run dev
 ```
 
-## Demo portal
+### Scripts
 
-The investor dashboard (`/investor`) and admin console (`/admin`) are gated behind a demo login at `/login`. Each role has its own access code, and sessions are HMAC-signed and expire after 8 hours.
+```bash
+npm run dev           # dev server
+npm run build         # production build
+npm run start         # serve the production build
+npm run lint          # ESLint (next/core-web-vitals)
+npm run typecheck     # TypeScript, no emit
+npm test              # Vitest data-layer tests (embedded Postgres, or DATABASE_URL)
+npm run test:e2e      # Playwright end-to-end tests against the production build
+npm run db:generate   # create a new SQL migration after editing lib/db/schema.ts
+npm run db:migrate    # apply migrations to the Postgres at DATABASE_URL
+```
 
-| Variable | Purpose |
-|---|---|
-| `DEMO_INVESTOR_CODE` | Access code for the investor role |
-| `DEMO_ADMIN_CODE` | Access code for the admin role |
-| `SESSION_SECRET` | Secret used to sign session cookies (use a long random string) |
+Run `npm run build` before `npm run test:e2e`; the e2e suite serves the build.
 
-In development (`npm run dev`) these fall back to `gsc-demo` / `gsc-admin` so there is zero setup. **Production builds have no defaults**: until all three variables are set, the login is disabled and shows a "not configured" notice. This is still demo-grade auth; see [`docs/LAUNCH_PLAN.md`](./docs/LAUNCH_PLAN.md) for the path to real accounts.
+### Environment variables
 
-The apply form (`/apply`) writes submissions to a JSON-backed review queue (`data/applications.json`, gitignored, seeded in code) that surfaces in the admin console, where an admin can approve or reject each pending application.
+See `.env.example`.
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `DATABASE_URL` | **Production** | Postgres connection string. Production refuses to start without it. |
+| `SIGNUP_INVITE_CODE` | No | If set, creating a workspace requires this code (closed beta). |
+| `PGLITE_DIR` | No | Embedded database location (default `.data/pglite`, or `memory://`). |
+| `ALLOW_EMBEDDED_DB` | No | Set to `1` to let a production build use the embedded database (local e2e only). |
+
+## Deploying
+
+1. Provision a Postgres database (a serverless provider such as Neon works; the driver is pooler-safe).
+2. Set `DATABASE_URL` (and optionally `SIGNUP_INVITE_CODE`) on the host.
+3. Run `npm run db:migrate` against that database as part of every deploy, before the new build takes traffic.
+4. `npm run build && npm run start`, or deploy to a Next.js host.
+
+## Security model
+
+- **Tenancy.** `workspaces` is the tenant boundary. Every customer-owned row carries a `workspace_id`, and every query in `lib/applications.ts` filters on it, including updates, so a guessed id from another tenant matches nothing.
+- **Authorization.** `requireMembership` in `lib/tenancy.ts` is the single gate for workspace pages and server actions. A signed-in user without a role in the workspace gets a 404, which does not reveal whether it exists. Server actions re-check it themselves, since actions can be invoked directly.
+- **Sessions.** Random 256-bit tokens in an `httpOnly`, `SameSite=Lax`, `Secure` (production) cookie. Only a SHA-256 of the token is stored.
+- **Passwords.** scrypt (N=2^15, r=8, p=3) with a per-password salt, minimum 10 characters. Unknown-email logins take as long as wrong-password ones.
+- **Tests.** The tenant-isolation suites include an attack test that edits form fields in the browser to review another tenant's application. It was mutation-checked: removing the workspace filter makes it fail.
+- **Not done yet:** login rate limiting, 2FA, row-level security in Postgres as a second layer, a CSP, and a security review. These are tracked in the plan.
 
 ## Project layout
 
 | Path | Purpose |
 |---|---|
-| `app/layout.tsx` | Root layout: site metadata, header, footer |
-| `app/page.tsx` | Homepage: hero, `#model` allocation section, `#security` controls |
-| `app/login/` `app/investor/` `app/admin/` `app/apply/` `app/disclosures/` | Login and portal pages |
-| `app/**/actions.ts` | Server actions (apply submission, login/logout, application review) |
-| `components/` | Client components (allocation chart, apply/login forms, session bar) |
-| `lib/platform-data.ts` | Single source of truth for all demo content: platform facts, pools, metrics, queues, controls |
-| `lib/application-store.ts` | JSON-backed application queue (seeded, filesystem-persisted) |
-| `lib/auth.ts` | Cookie-based demo session helpers |
-| `app/globals.css` | The entire design system (tokens, chrome, cards, forms, tables) |
-| `tests/` | Playwright end-to-end smoke tests |
-
-To change site copy or numbers, edit `lib/platform-data.ts` — pages render from it.
+| `app/` | Routes: marketing home, `/signup`, `/login`, `/workspaces`, `/legal`, and `/w/[slug]/{apply,admin,investor}` |
+| `app/**/actions.ts` | Server actions (signup, login/logout, apply, review) |
+| `components/` | Client components (forms, session bar, allocation chart) |
+| `lib/db/` | Drizzle schema, driver selection (Postgres / PGlite), error helpers |
+| `drizzle/` | Generated SQL migrations (commit these) |
+| `lib/accounts.ts` `lib/workspaces.ts` `lib/applications.ts` | Data access. Pure database code, unit-tested |
+| `lib/tenancy.ts` `lib/auth/` | Authorization guard and cookie/session layer |
+| `lib/product.ts` | Product name and legal disclaimer |
+| `lib/sample-data.ts` | Illustrative data for the investor preview |
+| `tests/` | Playwright e2e. Vitest unit tests sit beside the code as `*.test.ts` |
 
 ## CI
 
-Every push to `main` and every pull request runs lint, typecheck, a production build, and the Playwright smoke tests via GitHub Actions (`.github/workflows/ci.yml`).
+Every push to `main` and every pull request runs, against a Postgres 16 service: lint, typecheck, migrations, unit tests (on both embedded and real Postgres), build, and the Playwright suite (`.github/workflows/ci.yml`).
 
 ## Roadmap
 
-See [`docs/LAUNCH_PLAN.md`](./docs/LAUNCH_PLAN.md) for the goal and the path from prototype to launch, and [`ASSESSMENT.md`](./ASSESSMENT.md) for the original assessment and phased plan. Phase 1 (single-router consolidation), Phase 2 (engineering hygiene), and Phase 3 (working apply flow, mock auth, accessibility, smoke tests) are all complete.
+[`docs/LAUNCH_PLAN.md`](./docs/LAUNCH_PLAN.md) has the goal, milestones and what is needed from the owner. [`ASSESSMENT.md`](./ASSESSMENT.md) is the original repository assessment.

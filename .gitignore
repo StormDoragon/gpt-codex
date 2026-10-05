@@ -17,3 +17,6 @@ tsconfig.tsbuildinfo
 /test-results
 /playwright-report
 /playwright/.cache
+
+# Embedded dev database (PGlite)
+/.data
