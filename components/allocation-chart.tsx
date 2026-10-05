@@ -6,10 +6,13 @@ import { pools } from '../lib/sample-data';
 export function AllocationChart() {
   return (
     <div>
-      <div className="chart-shell">
+      {/* Decorative: the legend below states every value in text. */}
+      <div className="chart-shell" aria-hidden="true">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          {/* No keyboard layer: it is decorative and hidden from assistive tech, so it must not take focus. */}
+          <PieChart accessibilityLayer={false}>
             <Pie
+              rootTabIndex={-1}
               data={pools}
               dataKey="allocation"
               nameKey="name"
@@ -26,7 +29,7 @@ export function AllocationChart() {
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <ul className="chart-legend">
+      <ul className="chart-legend" aria-label="Allocation by pool">
         {pools.map((pool) => (
           <li key={pool.name}>
             <span className="pool-dot" style={{ background: pool.color }} />

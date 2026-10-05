@@ -5,6 +5,10 @@ import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../../../lib/auth/pass
 import { getSessionUser, startSession } from '../../../lib/auth/session';
 import { readText } from '../../../lib/form';
 import { acceptInvitation } from '../../../lib/invitations';
+import { LIMITS, describeWait } from '../../../lib/limits';
+import { logSecurity } from '../../../lib/log';
+import { hit } from '../../../lib/rate-limit';
+import { getClientIp } from '../../../lib/request';
 
 export type AcceptState = { error: string };
 
@@ -18,6 +22,15 @@ const MESSAGES = {
 } as const;
 
 export async function acceptInvite(_prev: AcceptState, data: FormData): Promise<AcceptState> {
+  // Accepting can create an account (a deliberately slow password hash), so
+  // bound how often one address can try, whether or not the token is valid.
+  const ip = getClientIp();
+  const attempt = await hit(LIMITS.inviteAcceptByIp, ip);
+  if (!attempt.allowed) {
+    logSecurity('invite.blocked', { ip });
+    return { error: `Too many attempts. Try again in ${describeWait(attempt.retryAfterSeconds)}.` };
+  }
+
   const token = readText(data, 'token', 200);
   // Who is accepting comes from the session cookie, never from form fields.
   const sessionUser = await getSessionUser();

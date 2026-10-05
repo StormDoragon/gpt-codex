@@ -3,6 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { addApplication } from '../../../../lib/applications';
 import { isValidEmail, readText } from '../../../../lib/form';
+import { LIMITS, describeWait } from '../../../../lib/limits';
+import { logSecurity } from '../../../../lib/log';
+import { hit } from '../../../../lib/rate-limit';
+import { getClientIp } from '../../../../lib/request';
 import { getWorkspaceBySlug } from '../../../../lib/workspaces';
 
 export type ApplyState = { ok: boolean; message: string };
@@ -15,6 +19,19 @@ export async function submitApplication(_prev: ApplyState, data: FormData): Prom
   const workspace = await getWorkspaceBySlug(readText(data, 'workspace', 60));
   if (!workspace) {
     return { ok: false, message: 'This intake form is no longer available.' };
+  }
+
+  // This form is public and writes to the database, so it is limited per
+  // address and per workspace (so one workspace can't be flooded by a botnet).
+  const ip = getClientIp();
+  const [byIp, byWorkspace] = await Promise.all([
+    hit(LIMITS.intakeByIp, ip),
+    hit(LIMITS.intakeByWorkspace, workspace.id),
+  ]);
+  if (!byIp.allowed || !byWorkspace.allowed) {
+    logSecurity('intake.blocked', { ip, workspace: workspace.slug, byIp: !byIp.allowed });
+    const wait = Math.max(byIp.allowed ? 0 : byIp.retryAfterSeconds, byWorkspace.allowed ? 0 : byWorkspace.retryAfterSeconds);
+    return { ok: false, message: `Too many submissions. Please try again in ${describeWait(wait)}.` };
   }
 
   // Honeypot: real people never see or fill this field. Pretend it worked.

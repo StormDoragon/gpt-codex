@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { PASSWORD, apply, formAlert, freshPage, signUp } from './helpers';
 
 test.describe('public site', () => {

@@ -15,6 +15,13 @@
       "when": 1791167346939,
       "tag": "0001_orange_invaders",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791200981815,
+      "tag": "0002_dapper_hellfire_club",
+      "breakpoints": true
     }
   ]
 }

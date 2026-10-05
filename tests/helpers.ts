@@ -2,6 +2,12 @@ import { expect, type Browser, type BrowserContext, type Page } from '@playwrigh
 
 export const PASSWORD = 'correct horse battery staple';
 
+/** A random private-range address: the server reads it from X-Forwarded-For, so tests can be distinct "clients". */
+export function randomIp(): string {
+  const octet = () => Math.floor(Math.random() * 254) + 1;
+  return `10.${octet()}.${octet()}.${octet()}`;
+}
+
 let sequence = 0;
 export const unique = () =>
   `${Date.now().toString(36)}${(sequence++).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -36,8 +42,9 @@ export async function apply(page: Page, slug: string, name: string) {
   await expect(page.getByRole('status')).toContainText(/received your application/i);
 }
 
-export async function freshPage(browser: Browser, baseURL: string | undefined) {
-  const context = await browser.newContext({ baseURL });
+/** A new browser context with its own cookies and (by default) its own client address. */
+export async function freshPage(browser: Browser, baseURL: string | undefined, ip: string = randomIp()) {
+  const context = await browser.newContext({ baseURL, extraHTTPHeaders: { 'x-forwarded-for': ip } });
   return { context, page: await context.newPage() };
 }
 

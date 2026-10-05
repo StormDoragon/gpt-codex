@@ -5,9 +5,11 @@ import {
   date,
   foreignKey,
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -219,5 +221,22 @@ export const ledgerEntries = pgTable(
       columns: [table.investorId, table.workspaceId],
       foreignColumns: [investors.id, investors.workspaceId],
     }).onDelete('cascade'),
+  ],
+);
+
+// Fixed-window counters for rate limiting. Kept in Postgres rather than process
+// memory so the limits hold across serverless instances. `key` is namespaced by
+// limit name; `bucket` is the window index; expired rows are swept opportunistically.
+export const rateLimits = pgTable(
+  'rate_limits',
+  {
+    key: text('key').notNull(),
+    bucket: bigint('bucket', { mode: 'number' }).notNull(),
+    count: integer('count').notNull().default(0),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.key, table.bucket] }),
+    index('rate_limits_expires_idx').on(table.expiresAt),
   ],
 );

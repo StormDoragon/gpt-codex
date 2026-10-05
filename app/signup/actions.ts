@@ -5,11 +5,24 @@ import { createAccountWithWorkspace } from '../../lib/accounts';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../../lib/auth/password-policy';
 import { startSession } from '../../lib/auth/session';
 import { isValidEmail, readText } from '../../lib/form';
+import { LIMITS, describeWait } from '../../lib/limits';
+import { logSecurity } from '../../lib/log';
+import { hit } from '../../lib/rate-limit';
+import { getClientIp } from '../../lib/request';
 import { signupCodeMatches } from '../../lib/signup-gate';
 
 export type SignupState = { error: string };
 
 export async function signup(_prev: SignupState, data: FormData): Promise<SignupState> {
+  // Every attempt counts, including ones with a wrong beta code, so the code
+  // cannot be guessed and signups cannot be mass-produced.
+  const ip = getClientIp();
+  const attempt = await hit(LIMITS.signupByIp, ip);
+  if (!attempt.allowed) {
+    logSecurity('signup.blocked', { ip });
+    return { error: `Too many sign-up attempts from your network. Try again in ${describeWait(attempt.retryAfterSeconds)}.` };
+  }
+
   const name = readText(data, 'name', 120);
   const workspaceName = readText(data, 'workspaceName', 120);
   const email = readText(data, 'email', 254);

@@ -3,6 +3,11 @@ import Link from 'next/link';
 import './globals.css';
 import { product } from '../lib/product';
 
+// Every page renders per request so Next.js can stamp that request's CSP nonce
+// onto its inline scripts (see middleware.ts). Prerendered HTML has no nonce,
+// and would be blocked by the policy.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: {
     default: `${product.name}: ${product.tagline}`,
