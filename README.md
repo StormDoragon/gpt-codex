@@ -34,10 +34,15 @@ npm run test:e2e   # Playwright smoke tests (builds/serves automatically)
 
 ## Demo portal
 
-The investor dashboard (`/investor`) and admin console (`/admin`) are gated behind a demo login at `/login`. Pick a role and enter the access code:
+The investor dashboard (`/investor`) and admin console (`/admin`) are gated behind a demo login at `/login`. Each role has its own access code, and sessions are HMAC-signed and expire after 8 hours.
 
-- Default access code: `gsc-demo`
-- Override it by setting the `DEMO_ACCESS_CODE` environment variable
+| Variable | Purpose |
+|---|---|
+| `DEMO_INVESTOR_CODE` | Access code for the investor role |
+| `DEMO_ADMIN_CODE` | Access code for the admin role |
+| `SESSION_SECRET` | Secret used to sign session cookies (use a long random string) |
+
+In development (`npm run dev`) these fall back to `gsc-demo` / `gsc-admin` so there is zero setup. **Production builds have no defaults**: until all three variables are set, the login is disabled and shows a "not configured" notice. This is still demo-grade auth; see [`docs/LAUNCH_PLAN.md`](./docs/LAUNCH_PLAN.md) for the path to real accounts.
 
 The apply form (`/apply`) writes submissions to a JSON-backed review queue (`data/applications.json`, gitignored, seeded in code) that surfaces in the admin console, where an admin can approve or reject each pending application.
 
@@ -64,4 +69,4 @@ Every push to `main` and every pull request runs lint, typecheck, a production b
 
 ## Roadmap
 
-See [`ASSESSMENT.md`](./ASSESSMENT.md) for the full assessment and phased plan. Phase 1 (single-router consolidation), Phase 2 (engineering hygiene), and Phase 3 (working apply flow, mock auth, accessibility, smoke tests) are all complete.
+See [`docs/LAUNCH_PLAN.md`](./docs/LAUNCH_PLAN.md) for the goal and the path from prototype to launch, and [`ASSESSMENT.md`](./ASSESSMENT.md) for the original assessment and phased plan. Phase 1 (single-router consolidation), Phase 2 (engineering hygiene), and Phase 3 (working apply flow, mock auth, accessibility, smoke tests) are all complete.

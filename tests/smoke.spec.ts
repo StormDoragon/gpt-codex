@@ -1,11 +1,15 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const ACCESS_CODE = 'gsc-demo';
+// Set by playwright.config.ts; the production server has no default credentials.
+const CODES = {
+  investor: process.env.DEMO_INVESTOR_CODE!,
+  admin: process.env.DEMO_ADMIN_CODE!,
+};
 
 async function login(page: Page, role: 'investor' | 'admin') {
   await page.goto('/login');
   await page.selectOption('#login-role', role);
-  await page.fill('#login-code', ACCESS_CODE);
+  await page.fill('#login-code', CODES[role]);
   await page.getByRole('button', { name: /enter demo portal/i }).click();
   await expect(page).toHaveURL(new RegExp(`/${role}$`));
 }
@@ -53,6 +57,26 @@ test.describe('access control', () => {
     await page.getByRole('button', { name: /enter demo portal/i }).click();
     await expect(page.getByRole('alert')).toBeVisible();
     await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('the investor code cannot sign in as admin', async ({ page }) => {
+    await page.goto('/login');
+    await page.selectOption('#login-role', 'admin');
+    await page.fill('#login-code', CODES.investor);
+    await page.getByRole('button', { name: /enter demo portal/i }).click();
+    await expect(page.getByRole('alert')).toBeVisible();
+    await page.goto('/admin');
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('a forged session cookie does not grant access', async ({ page, context, baseURL }) => {
+    for (const forged of ['admin', 'investor', 'admin.9999999999.deadbeef']) {
+      await context.addCookies([{ name: 'demo-session', value: forged, url: baseURL! }]);
+      await page.goto('/admin');
+      await expect(page, `forged cookie "${forged}" must not open /admin`).toHaveURL(/\/login/);
+      await page.goto('/investor');
+      await expect(page, `forged cookie "${forged}" must not open /investor`).toHaveURL(/\/login/);
+    }
   });
 
   test('investor can sign in and out', async ({ page }) => {
