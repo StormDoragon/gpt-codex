@@ -4,6 +4,7 @@ import { getSessionUser } from './auth/session';
 import type { MemberRole } from './db/schema';
 import { getMembership, type WorkspaceSummary } from './workspaces';
 
+export const OWNER_ROLES: MemberRole[] = ['owner'];
 export const MANAGER_ROLES: MemberRole[] = ['owner', 'admin'];
 export const ALL_ROLES: MemberRole[] = ['owner', 'admin', 'investor'];
 

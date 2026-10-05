@@ -728,3 +728,19 @@ textarea {
     display: none;
   }
 }
+
+.session-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.session-actions a {
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.danger-zone {
+  border-color: rgba(255, 138, 138, .38);
+}

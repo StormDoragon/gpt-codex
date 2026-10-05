@@ -1,10 +1,15 @@
 import Link from 'next/link';
+import type { MemberRole } from '../lib/db/schema';
 
-export function AdminTabs({ slug, active }: { slug: string; active: 'applications' | 'investors' }) {
-  const tabs = [
+type Tab = 'applications' | 'investors' | 'settings';
+
+export function AdminTabs({ slug, active, role }: { slug: string; active: Tab; role: MemberRole }) {
+  const tabs: { key: Tab; label: string; href: string }[] = [
     { key: 'applications', label: 'Applications', href: `/w/${slug}/admin` },
     { key: 'investors', label: 'Investors', href: `/w/${slug}/admin/investors` },
-  ] as const;
+  ];
+  // Settings (export, deletion) belongs to the owner alone.
+  if (role === 'owner') tabs.push({ key: 'settings', label: 'Settings', href: `/w/${slug}/admin/settings` });
 
   return (
     <nav className="admin-tabs" aria-label="Admin sections">

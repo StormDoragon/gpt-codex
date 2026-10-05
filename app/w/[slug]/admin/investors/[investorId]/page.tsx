@@ -32,7 +32,7 @@ export default async function InvestorDetailPage({ params }: { params: { slug: s
     <main className="section">
       <div className="container stack">
         <SessionBar user={user} workspace={workspace} role={role} />
-        <AdminTabs slug={workspace.slug} active="investors" />
+        <AdminTabs slug={workspace.slug} active="investors" role={role} />
         <div>
           <p className="eyebrow">
             <Link href={`/w/${workspace.slug}/admin/investors`}>

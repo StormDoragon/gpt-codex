@@ -25,6 +25,7 @@ const actionLabel: Record<string, string> = {
   'ledger.distribution': 'recorded a distribution',
   'invitation.created': 'created an investor invitation',
   'invitation.accepted': 'accepted an invitation',
+  'workspace.exported': 'downloaded a workspace export',
 };
 
 type ActivityMetadata = { applicant?: string; name?: string; amountCents?: number };
@@ -54,7 +55,7 @@ export default async function AdminPage({ params }: { params: { slug: string } }
     <main className="section">
       <div className="container stack">
         <SessionBar user={user} workspace={workspace} role={role} />
-        <AdminTabs slug={workspace.slug} active="applications" />
+        <AdminTabs slug={workspace.slug} active="applications" role={role} />
         <div>
           <p className="eyebrow">Admin console</p>
           <h1 className="page-title">Review applications for {workspace.name}.</h1>

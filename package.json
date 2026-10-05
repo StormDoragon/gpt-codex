@@ -11,7 +11,8 @@
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:drill": "bash scripts/backup-restore-drill.sh"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.8",

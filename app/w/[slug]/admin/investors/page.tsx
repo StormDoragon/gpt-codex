@@ -35,7 +35,7 @@ export default async function InvestorsPage({
     <main className="section">
       <div className="container stack">
         <SessionBar user={user} workspace={workspace} role={role} />
-        <AdminTabs slug={workspace.slug} active="investors" />
+        <AdminTabs slug={workspace.slug} active="investors" role={role} />
         <div>
           <p className="eyebrow">Investors</p>
           <h1 className="page-title">Investors in {workspace.name}.</h1>

@@ -96,6 +96,14 @@ test.describe('accessibility (WCAG 2.2 A/AA, axe-core)', () => {
     const investorPage = await acceptAsNewAccount(browser, baseURL, link, owner.slug);
     findings.push(...(await audit(investorPage, 'investor dashboard')));
 
+    // Settings and account pages, including the destructive-action forms.
+    await page.goto(`/w/${owner.slug}/admin/settings`);
+    findings.push(...(await audit(page, 'workspace settings')));
+    await page.goto('/account');
+    findings.push(...(await audit(page, 'account (owner: deletion blocked)')));
+    await investorPage.goto('/account');
+    findings.push(...(await audit(investorPage, 'account (investor: delete form)')));
+
     expect(investor.investorId).toBeTruthy();
     expect(describeFindings(findings)).toEqual([]);
   });
