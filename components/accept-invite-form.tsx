@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { acceptInvite, type AcceptState } from '../app/invite/[token]/actions';
 import { MIN_PASSWORD_LENGTH } from '../lib/auth/password-policy';
 
@@ -27,7 +28,7 @@ export function AcceptInviteForm({
   /** True when the visitor is not signed in and must create an account. */
   needsAccount: boolean;
 }) {
-  const [state, formAction] = useFormState(acceptInvite, initialState);
+  const [state, formAction] = useActionState(acceptInvite, initialState);
 
   return (
     <form className="card" action={formAction}>

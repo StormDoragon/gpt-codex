@@ -23,7 +23,7 @@ export async function submitApplication(_prev: ApplyState, data: FormData): Prom
 
   // This form is public and writes to the database, so it is limited per
   // address and per workspace (so one workspace can't be flooded by a botnet).
-  const ip = getClientIp();
+  const ip = await getClientIp();
   const [byIp, byWorkspace] = await Promise.all([
     hit(LIMITS.intakeByIp, ip),
     hit(LIMITS.intakeByWorkspace, workspace.id),

@@ -16,8 +16,9 @@ const DEAD_LINK: Record<'unknown' | 'used' | 'revoked' | 'expired', { title: str
   expired: { title: 'This invitation has expired.', body: 'Invitations last 7 days. Ask your fund manager to send a new one.' },
 };
 
-export default async function InvitePage({ params }: { params: { token: string } }) {
-  const [preview, sessionUser] = await Promise.all([previewInvitation(params.token), getSessionUser()]);
+export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  const [preview, sessionUser] = await Promise.all([previewInvitation(token), getSessionUser()]);
 
   if (preview.status !== 'valid') {
     const message = DEAD_LINK[preview.status];
@@ -72,7 +73,7 @@ export default async function InvitePage({ params }: { params: { token: string }
           </section>
         ) : signedInAsInvitee ? (
           <AcceptInviteForm
-            token={params.token}
+            token={token}
             email={preview.email}
             defaultName={preview.investorName}
             needsAccount={false}
@@ -84,13 +85,13 @@ export default async function InvitePage({ params }: { params: { token: string }
               An account already exists for <strong>{preview.email}</strong>. Sign in with it to accept this
               invitation.
             </p>
-            <Link className="btn primary" href={`/login?next=${encodeURIComponent(`/invite/${params.token}`)}`}>
+            <Link className="btn primary" href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}>
               Sign in
             </Link>
           </section>
         ) : (
           <AcceptInviteForm
-            token={params.token}
+            token={token}
             email={preview.email}
             defaultName={preview.investorName}
             needsAccount

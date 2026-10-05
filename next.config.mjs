@@ -10,11 +10,9 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  experimental: {
-    // Database drivers must load from node_modules at runtime, not be bundled
-    // (PGlite ships WASM and data files it reads from disk).
-    serverComponentsExternalPackages: ['@electric-sql/pglite', 'postgres'],
-  },
+  // Database drivers must load from node_modules at runtime, not be bundled
+  // (PGlite ships WASM and data files it reads from disk).
+  serverExternalPackages: ['@electric-sql/pglite', 'postgres'],
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },

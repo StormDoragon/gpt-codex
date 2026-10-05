@@ -15,7 +15,7 @@ export async function POST() {
   const data = await exportAccount(user.id);
   if (!data) redirect('/login');
 
-  logSecurity('account.exported', { ip: getClientIp(), actor: short(hashToken(user.email)) });
+  logSecurity('account.exported', { ip: await getClientIp(), actor: short(hashToken(user.email)) });
   const day = new Date().toISOString().slice(0, 10);
   return new NextResponse(JSON.stringify(data, null, 2), {
     headers: {

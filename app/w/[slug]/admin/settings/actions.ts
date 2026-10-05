@@ -20,6 +20,6 @@ export async function deleteWorkspaceAction(_prev: DeleteWorkspaceState, data: F
   }
 
   await deleteWorkspace(workspace.id);
-  logSecurity('workspace.deleted', { ip: getClientIp(), workspace: workspace.slug, actor: short(hashToken(user.email)) });
+  logSecurity('workspace.deleted', { ip: await getClientIp(), workspace: workspace.slug, actor: short(hashToken(user.email)) });
   redirect('/workspaces');
 }

@@ -76,12 +76,26 @@ Each milestone has exit criteria. Don't start the next one until the current one
 - 2FA (TOTP or passkeys). White-label basics: logo, colors, custom domain.
 - Exit: one design partner can run a real (small) raise's investor onboarding end-to-end. The core loop for that exists now; it needs a hosted deployment and a design partner.
 
-### M3: Money for us + hardening (Nov 16–29)
-- Stripe subscriptions: free tier (1 fund, ≤10 investors), Pro, Scale. *Pricing is a hypothesis; test it in interviews.*
-- Rate limiting (login, signup and the public intake form), error monitoring, product analytics, backups and restore drill, data export and deletion.
-- Postgres row-level security as a second layer behind the application-level tenant filters, and a Content-Security-Policy.
-- Accessibility audit (axe in CI, WCAG 2.2 AA), performance budget, OWASP ASVS L1 self-review.
-- Exit: the "worthy" bar in section 6 is met.
+### M3: Money for us + hardening (Nov 16–29): hardening ✅ (first pass), billing and a few items open
+**Done (verified, mutation-checked where it guards security):**
+- ✅ Rate limiting on sign-in (layered per account+address, per account, per address), signup, the public intake form, and invitation acceptance; DB-backed so it holds across serverless instances; client address read through a configurable number of trusted proxy hops.
+- ✅ Strict nonce-based Content-Security-Policy; tests prove an injected script and an injected form are blocked, framing is denied, and every main flow runs with zero violations.
+- ✅ Accessibility audit with axe-core (WCAG 2.2 A/AA) on every page and interaction state in CI, zero violations. *Automated testing finds only part of WCAG: a manual keyboard-only and screen-reader pass is still owed.*
+- ✅ Data export (owner workspace export; personal export) and deletion (workspace; account), with exports provably secret-free and scoped.
+- ✅ Error boundaries that leak nothing, proven against an unreachable database and 13 hostile URLs.
+- ✅ Backup/restore drill (`npm run db:drill`) that restores a dump into a scratch database and proves it identical; run, and shown able to fail.
+- ✅ Security self-assessment against OWASP ASVS L1 (`docs/SECURITY.md`) and an operations guide (`docs/OPERATIONS.md`).
+- ✅ **Framework upgrade forced by an audit finding:** every Next.js 14.x release has published advisories (several critical or high, including one about CSP nonces, which this app uses) and no 14.x fix exists. Upgraded to Next 15.5.27 with React 19; production audit is now 0, enforced by a CI gate.
+- ✅ Password minimum raised to 12 characters (ASVS 2.1.1), enforced and tested server-side.
+
+**Still open in M3:**
+- **Password reset and change** (needs an email provider). This is the most important missing security feature for real users.
+- Stripe subscriptions: **deliberately not started.** Pricing is still an unvalidated hypothesis (the customer interviews have not happened) and checkout needs your Stripe account.
+- Postgres row-level security as a second layer behind the application-level tenant filters, then re-run the tenancy tests as a non-superuser role.
+- Error monitoring, product analytics, uptime checks and alerting (need accounts); a performance budget.
+- Per-investor erasure for managers (today a manager can only delete the whole workspace), a breached-password check, 2FA, per-user session management.
+- An independent security review and a formal threat model.
+- Exit: the "worthy" bar in section 6 is met. The security items above are the gap.
 
 ### M4: Private beta (Nov 16–Dec 6, overlapping)
 - 5–10 design partners onboarded by hand; weekly feedback calls.
@@ -107,7 +121,7 @@ A realistic year-end bar is **3 paying customers (~$300–900 MRR)** with a vali
 
 ## 6. The "worthy" bar (ship criteria)
 
-- **Security:** hashed passwords and revocable server-side sessions ✅, per-workspace authorization ✅, tenant isolation tests ✅, audit log of decisions ✅, fails closed without a production database ✅. Still to do: rate limiting, 2FA, row-level security, CSP, secrets only via env on the host.
+- **Security:** hashed passwords and revocable server-side sessions ✅, per-workspace authorization ✅, tenant isolation tests ✅, audit log ✅, fails closed without a production database ✅, rate limiting ✅, strict CSP ✅, clean production dependency audit enforced in CI ✅, data export and deletion ✅. Still to do: **password reset**, 2FA, row-level security, monitoring and alerting, an independent review (see `docs/SECURITY.md`).
 - **Quality:** CI green (lint, typecheck, build, e2e) ✅. Add axe accessibility checks and a Lighthouse budget (≥95 performance, ≥95 accessibility).
 - **Reliability:** error monitoring, uptime check, tested backup restore.
 - **Legal:** ToS, privacy policy, DPA, counsel-approved positioning.

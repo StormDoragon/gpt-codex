@@ -24,10 +24,13 @@ test.describe('public site', () => {
   });
 
   test('responses carry the security headers', async ({ request }) => {
-    const response = await request.get('/');
-    expect(response.headers()['x-frame-options']).toBe('DENY');
-    expect(response.headers()['x-content-type-options']).toBe('nosniff');
-    expect(response.headers()['x-powered-by']).toBeUndefined();
+    const headers = (await request.get('/')).headers();
+    expect(headers['x-frame-options']).toBe('DENY');
+    expect(headers['x-content-type-options']).toBe('nosniff');
+    expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
+    expect(headers['permissions-policy']).toContain('camera=()');
+    expect(headers['strict-transport-security']).toMatch(/max-age=\d{7,}/);
+    expect(headers['x-powered-by']).toBeUndefined();
   });
 
   test('an unknown workspace intake link is a 404', async ({ page }) => {
@@ -54,6 +57,37 @@ test.describe('accounts and sessions', () => {
     expect(session!.sameSite).toBe('Lax');
     expect(session!.value.length).toBeGreaterThanOrEqual(40);
     expect(session!.value).not.toMatch(/owner|admin|investor/i);
+  });
+
+  test('signed-in pages are never cached by browsers or shared proxies', async ({ page, context }) => {
+    const owner = await signUp(page, 'NoCache');
+    for (const path of [
+      `/w/${owner.slug}/admin`,
+      `/w/${owner.slug}/admin/investors`,
+      `/w/${owner.slug}/admin/settings`,
+      `/w/${owner.slug}/investor`,
+      '/account',
+      '/workspaces',
+    ]) {
+      const response = await context.request.get(path);
+      expect(response.status(), path).toBe(200);
+      const cacheControl = response.headers()['cache-control'] ?? '';
+      expect(cacheControl, `${path} cache-control`).toContain('no-store');
+      expect(cacheControl, `${path} cache-control`).toContain('private');
+    }
+  });
+
+  test('the server enforces the password policy even when the browser check is bypassed', async ({ page }) => {
+    await page.goto('/signup');
+    await page.fill('#signup-name', 'Weak Password');
+    await page.fill('#signup-workspace', 'Weak Fund');
+    await page.fill('#signup-email', `weak-${Date.now()}@example.com`);
+    await page.fill('#signup-password', 'only11chars'); // 11 characters
+    // Remove the HTML minlength attribute, as a script or a hand-built request would.
+    await page.locator('#signup-password').evaluate((el) => el.removeAttribute('minlength'));
+    await page.getByRole('button', { name: /create workspace/i }).click();
+    await expect(formAlert(page)).toContainText('at least 12 characters');
+    await expect(page).toHaveURL(/\/signup/);
   });
 
   test('a duplicate email cannot sign up again', async ({ page, browser, baseURL }) => {
@@ -145,6 +179,8 @@ test.describe('review workflow', () => {
     const owner = await signUp(page, 'Sample');
     await page.goto(`/w/${owner.slug}/investor`);
     await expect(page.getByText(/sample data/i).first()).toBeVisible();
+    // The allocation chart actually draws its four slices (it can fail silently across React upgrades).
+    await expect(page.locator('.recharts-pie-sector')).toHaveCount(4);
   });
 });
 

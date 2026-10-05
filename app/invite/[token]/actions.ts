@@ -24,7 +24,7 @@ const MESSAGES = {
 export async function acceptInvite(_prev: AcceptState, data: FormData): Promise<AcceptState> {
   // Accepting can create an account (a deliberately slow password hash), so
   // bound how often one address can try, whether or not the token is valid.
-  const ip = getClientIp();
+  const ip = await getClientIp();
   const attempt = await hit(LIMITS.inviteAcceptByIp, ip);
   if (!attempt.allowed) {
     logSecurity('invite.blocked', { ip });

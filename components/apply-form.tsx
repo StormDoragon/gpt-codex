@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { submitApplication, type ApplyState } from '../app/w/[slug]/apply/actions';
 
 const initialState: ApplyState = { ok: false, message: '' };
@@ -15,7 +16,7 @@ function SubmitButton() {
 }
 
 export function ApplyForm({ workspaceSlug }: { workspaceSlug: string }) {
-  const [state, formAction] = useFormState(submitApplication, initialState);
+  const [state, formAction] = useActionState(submitApplication, initialState);
 
   return (
     <form className="card" action={formAction}>

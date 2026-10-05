@@ -6,8 +6,9 @@ import { getWorkspaceBySlug } from '../../../../lib/workspaces';
 
 export const metadata: Metadata = { title: 'Investor application' };
 
-export default async function ApplyPage({ params }: { params: { slug: string } }) {
-  const workspace = await getWorkspaceBySlug(params.slug);
+export default async function ApplyPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const workspace = await getWorkspaceBySlug(slug);
   if (!workspace) notFound();
 
   return (

@@ -25,7 +25,7 @@ export async function deleteAccountAction(_prev: DeleteAccountState, data: FormD
     return { error: `You still own ${names}. Delete ${result.workspaces.length === 1 ? 'it' : 'them'} first.` };
   }
 
-  logSecurity('account.deleted', { ip: getClientIp(), actor: short(hashToken(user.email)) });
+  logSecurity('account.deleted', { ip: await getClientIp(), actor: short(hashToken(user.email)) });
   await endSession();
   redirect('/');
 }

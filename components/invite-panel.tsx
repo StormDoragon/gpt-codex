@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { issueInvitation, type InviteState } from '../app/w/[slug]/admin/investors/actions';
 import type { InvestorStatus } from '../lib/investors';
 
@@ -25,7 +25,7 @@ export function InvitePanel({
   investorId: string;
   status: InvestorStatus;
 }) {
-  const [state, formAction] = useFormState(issueInvitation, initialState);
+  const [state, formAction] = useActionState(issueInvitation, initialState);
   const [copied, setCopied] = useState(false);
 
   if (status === 'active') {

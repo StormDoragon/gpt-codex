@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { addInvestor, type AddInvestorState } from '../app/w/[slug]/admin/investors/actions';
 
 const initialState: AddInvestorState = { error: '' };
@@ -15,7 +16,7 @@ function SubmitButton() {
 }
 
 export function AddInvestorForm({ workspaceSlug }: { workspaceSlug: string }) {
-  const [state, formAction] = useFormState(addInvestor, initialState);
+  const [state, formAction] = useActionState(addInvestor, initialState);
 
   return (
     <form className="card" action={formAction}>

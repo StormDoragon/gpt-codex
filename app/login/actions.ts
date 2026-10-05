@@ -25,7 +25,7 @@ export async function login(_prev: LoginState, data: FormData): Promise<LoginSta
   // Failed attempts are counted per (account, address), per account, and per
   // address. The message is identical for unknown and known accounts, so the
   // limits reveal nothing about which emails are registered.
-  const ip = getClientIp();
+  const ip = await getClientIp();
   const accountHash = hashToken(normalizeEmail(email));
   const pair = `${accountHash}:${ip}`;
 

@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { signup, type SignupState } from '../app/signup/actions';
 import { MIN_PASSWORD_LENGTH } from '../lib/auth/password-policy';
 
@@ -17,7 +18,7 @@ function SubmitButton() {
 }
 
 export function SignupForm({ codeRequired }: { codeRequired: boolean }) {
-  const [state, formAction] = useFormState(signup, initialState);
+  const [state, formAction] = useActionState(signup, initialState);
 
   return (
     <form className="card" action={formAction}>

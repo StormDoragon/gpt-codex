@@ -16,7 +16,7 @@ export type SignupState = { error: string };
 export async function signup(_prev: SignupState, data: FormData): Promise<SignupState> {
   // Every attempt counts, including ones with a wrong beta code, so the code
   // cannot be guessed and signups cannot be mass-produced.
-  const ip = getClientIp();
+  const ip = await getClientIp();
   const attempt = await hit(LIMITS.signupByIp, ip);
   if (!attempt.allowed) {
     logSecurity('signup.blocked', { ip });

@@ -41,8 +41,9 @@ function describeDetail(metadata: unknown): string {
 const dateFormat = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 const timeFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' });
 
-export default async function AdminPage({ params }: { params: { slug: string } }) {
-  const { user, workspace, role } = await requireMembership(params.slug, MANAGER_ROLES, `/w/${params.slug}/admin`);
+export default async function AdminPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const { user, workspace, role } = await requireMembership(slug, MANAGER_ROLES, `/w/${slug}/admin`);
 
   const [applications, totals, activity] = await Promise.all([
     listApplications(workspace.id),

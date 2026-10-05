@@ -11,9 +11,10 @@ import { hashToken } from '../../../../../lib/tokens';
 // POST, not GET: a cross-site page cannot make a logged-in browser submit a
 // cross-site POST with its SameSite=Lax session cookie, so this cannot be
 // triggered from another site (and a download is not a side-effect-free GET).
-export async function POST(_request: Request, { params }: { params: { slug: string } }) {
+export async function POST(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   // Owner only: the export contains personal data about every investor.
-  const { user, workspace } = await requireMembership(params.slug, OWNER_ROLES, `/w/${params.slug}/admin/settings`);
+  const { user, workspace } = await requireMembership(slug, OWNER_ROLES, `/w/${slug}/admin/settings`);
 
   const data = await exportWorkspace(workspace.id);
   if (!data) notFound();
@@ -25,7 +26,7 @@ export async function POST(_request: Request, { params }: { params: { slug: stri
     targetType: 'workspace',
     targetId: workspace.id,
   });
-  logSecurity('workspace.exported', { ip: getClientIp(), workspace: workspace.slug, actor: short(hashToken(user.email)) });
+  logSecurity('workspace.exported', { ip: await getClientIp(), workspace: workspace.slug, actor: short(hashToken(user.email)) });
 
   const day = new Date().toISOString().slice(0, 10);
   return new NextResponse(JSON.stringify(data, null, 2), {

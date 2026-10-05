@@ -10,8 +10,9 @@ import { ALL_ROLES, requireMembership } from '../../../../lib/tenancy';
 
 export const metadata: Metadata = { title: 'Investor portal' };
 
-export default async function InvestorPortalPage({ params }: { params: { slug: string } }) {
-  const { user, workspace, role } = await requireMembership(params.slug, ALL_ROLES, `/w/${params.slug}/investor`);
+export default async function InvestorPortalPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const { user, workspace, role } = await requireMembership(slug, ALL_ROLES, `/w/${slug}/investor`);
 
   if (role !== 'investor') {
     return (

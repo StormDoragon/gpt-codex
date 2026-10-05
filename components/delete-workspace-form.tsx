@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { deleteWorkspaceAction, type DeleteWorkspaceState } from '../app/w/[slug]/admin/settings/actions';
 
 const initialState: DeleteWorkspaceState = { error: '' };
@@ -15,7 +16,7 @@ function SubmitButton() {
 }
 
 export function DeleteWorkspaceForm({ workspaceSlug, workspaceName }: { workspaceSlug: string; workspaceName: string }) {
-  const [state, formAction] = useFormState(deleteWorkspaceAction, initialState);
+  const [state, formAction] = useActionState(deleteWorkspaceAction, initialState);
 
   return (
     <form action={formAction}>

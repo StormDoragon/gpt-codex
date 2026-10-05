@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { deleteAccountAction, type DeleteAccountState } from '../app/account/actions';
 
 const initialState: DeleteAccountState = { error: '' };
@@ -15,7 +16,7 @@ function SubmitButton() {
 }
 
 export function DeleteAccountForm({ email }: { email: string }) {
-  const [state, formAction] = useFormState(deleteAccountAction, initialState);
+  const [state, formAction] = useActionState(deleteAccountAction, initialState);
 
   return (
     <form action={formAction}>

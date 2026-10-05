@@ -104,6 +104,17 @@ test.describe('investor onboarding', () => {
     await acceptAsNewAccount(browser, baseURL, second, owner.slug);
   });
 
+  test('the invitation page keeps its token out of Referer headers', async ({ page, browser, baseURL }) => {
+    const owner = await signUp(page, 'Referrer');
+    await addInvestor(page, owner.slug, 'Referrer Investor');
+    await page.getByRole('button', { name: 'Create invite link', exact: true }).click();
+    const link = await page.getByLabel('Invitation link').inputValue();
+
+    const { page: visitor } = await freshPage(browser, baseURL);
+    await visitor.goto(link);
+    await expect(visitor.locator('meta[name=referrer]')).toHaveAttribute('content', 'no-referrer');
+  });
+
   test('an existing account accepts by signing in as the invited email, and others are refused', async ({
     page,
     browser,

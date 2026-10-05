@@ -23,12 +23,13 @@ export default async function InvestorsPage({
   params,
   searchParams,
 }: {
-  params: { slug: string };
-  searchParams: SearchParams;
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
-  const { user, workspace, role } = await requireMembership(params.slug, MANAGER_ROLES, `/w/${params.slug}/admin/investors`);
+  const { slug } = await params;
+  const { user, workspace, role } = await requireMembership(slug, MANAGER_ROLES, `/w/${slug}/admin/investors`);
   const investors = await listInvestors(workspace.id);
-  const rawNotice = searchParams.notice;
+  const rawNotice = (await searchParams).notice;
   const notice = notices[Array.isArray(rawNotice) ? (rawNotice[0] ?? '') : (rawNotice ?? '')];
 
   return (

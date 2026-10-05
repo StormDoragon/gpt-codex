@@ -6,8 +6,9 @@ import { OWNER_ROLES, requireMembership } from '../../../../../lib/tenancy';
 
 export const metadata: Metadata = { title: 'Workspace settings' };
 
-export default async function SettingsPage({ params }: { params: { slug: string } }) {
-  const { user, workspace, role } = await requireMembership(params.slug, OWNER_ROLES, `/w/${params.slug}/admin/settings`);
+export default async function SettingsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const { user, workspace, role } = await requireMembership(slug, OWNER_ROLES, `/w/${slug}/admin/settings`);
 
   return (
     <main className="section">

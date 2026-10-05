@@ -13,15 +13,16 @@ import { MANAGER_ROLES, requireMembership } from '../../../../../../lib/tenancy'
 
 export const metadata: Metadata = { title: 'Investor' };
 
-export default async function InvestorDetailPage({ params }: { params: { slug: string; investorId: string } }) {
+export default async function InvestorDetailPage({ params }: { params: Promise<{ slug: string; investorId: string }> }) {
+  const { slug, investorId } = await params;
   const { user, workspace, role } = await requireMembership(
-    params.slug,
+    slug,
     MANAGER_ROLES,
-    `/w/${params.slug}/admin/investors/${params.investorId}`,
+    `/w/${slug}/admin/investors/${investorId}`,
   );
 
   // Looked up inside this workspace only: another workspace's investor id is a 404.
-  const investor = isUuid(params.investorId) ? await getInvestor(workspace.id, params.investorId) : null;
+  const investor = isUuid(investorId) ? await getInvestor(workspace.id, investorId) : null;
   if (!investor) notFound();
 
   const ledger = await listLedger(workspace.id, investor.id);

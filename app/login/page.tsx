@@ -8,8 +8,8 @@ export const metadata: Metadata = { title: 'Sign in' };
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
-export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
-  const raw = searchParams.next;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const raw = (await searchParams).next;
   const next = safeNextPath(Array.isArray(raw) ? raw[0] : raw);
 
   if (await getSessionUser()) {

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useEffect, useRef } from 'react';
+import { useFormStatus } from 'react-dom';
 import { recordLedgerEntry, type LedgerFormState } from '../app/w/[slug]/admin/investors/actions';
 
 const initialState: LedgerFormState = { ok: false, message: '' };
@@ -24,7 +24,7 @@ export function LedgerForm({
   investorId: string;
   defaultDate: string;
 }) {
-  const [state, formAction] = useFormState(recordLedgerEntry, initialState);
+  const [state, formAction] = useActionState(recordLedgerEntry, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
